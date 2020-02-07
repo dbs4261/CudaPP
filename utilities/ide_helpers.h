@@ -8,16 +8,16 @@
 #include <cstdio>
 #include <cstdlib>
 
-#include <cuda_runtime_api.h>
-
 #ifdef __JETBRAINS_IDE__
 
 #error "Compiler should never see this. This is just for static analysis."
-#define __cplusplus 201402L
+#define __cplusplus 201703L
 #define __CUDACC__ 1
 #define __CUDA_ARCH__ 1
 
 #endif // __JETBRAINS_IDE__
+
+#include <cuda_runtime_api.h>
 
 #ifndef CROSS_PLATFORM_INLINE
 #ifdef __GNUC__

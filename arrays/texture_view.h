@@ -5,7 +5,7 @@
 #ifndef CUDAPP_TEXTURE_VIEW_H
 #define CUDAPP_TEXTURE_VIEW_H
 
-#include "cuda_ide_helpers.h"
+#include "utilities/ide_helpers.h"
 
 #include <utility>
 
@@ -50,7 +50,7 @@ class TextureView<T, Dimensions, true> {
   using value_type = T;
   static constexpr std::size_t Dims = Dimensions;
 
-  __host__ __device__ TextureView() noexcept : tex(0), base_extent(make_float3(0, 0, 0)) {}
+  __host__ __device__ TextureView() noexcept : tex(0), base_extent(float3{0, 0, 0}) {}
   __host__ __device__ explicit TextureView(cudaTextureObject_t _tex, float3 _base_extent) noexcept : tex(_tex), base_extent(_base_extent) {}
   __host__ __device__ explicit TextureView(const TextureView<T, Dims, true>& _tex) noexcept : tex(_tex.tex), base_extent(_tex.base_extent) {}
   __host__ __device__ explicit TextureView(TextureView<T, Dims, true>&& _tex) noexcept : tex(std::move(_tex.tex)), base_extent(std::move(_tex.base_extent)) {}

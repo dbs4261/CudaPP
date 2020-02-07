@@ -27,9 +27,15 @@ target_sources(cudapp INTERFACE
   ${CMAKE_CURRENT_LIST_DIR}/arrays/texture_object.h
   ${CMAKE_CURRENT_LIST_DIR}/arrays/texture_view.h
   ${CMAKE_CURRENT_LIST_DIR}/utilities/ide_helpers.h
+  ${CMAKE_CURRENT_LIST_DIR}/utilities/memory_helpers.h
   ${CMAKE_CURRENT_LIST_DIR}/vector_types/vector_type_traits.h
 )
 
+target_include_directories(cudapp
+  INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/>
+    ${CUDA_INCLUDE_DIRS}
+)
 #set_target_properties(cudapp PROPERTIES
 #  CUDA_SEPERABLE_COMPILATION ON
 #  CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER}
@@ -46,3 +52,5 @@ target_link_libraries(cudapp
   INTERFACE
     ${CUDA_LIBRARIES}
 )
+
+add_subdirectory(test_application)

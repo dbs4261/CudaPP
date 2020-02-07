@@ -5,15 +5,15 @@
 #ifndef CUDAPP_ARRAY3D_H
 #define CUDAPP_ARRAY3D_H
 
-#include "cuda_ide_helpers.h"
+#include "utilities/ide_helpers.h"
 
 #include <cassert>
 #include <utility>
 
 #include <channel_descriptor.h>
 
-#include "cuda_helpers.h"
-#include "vector_type_traits.h"
+#include "utilities/memory_helpers.h"
+#include "vector_types/vector_type_traits.h"
 
 namespace cuda {
 
@@ -49,7 +49,9 @@ class Array3D {
   }
 
   Array3D<T>& operator=(const Array3D<T>& other) {
-    CudaCatchError(cudaFreeArray(this->array));
+    if (other.array != this->array) {
+      CudaCatchError(cudaFreeArray(this->array));
+    }
     this->extent = other.extent;
     this->flags = other.flags;
     this->array = other.array;

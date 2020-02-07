@@ -5,7 +5,7 @@
 #ifndef CUDAPP_TEXTURE_OBJECT_H
 #define CUDAPP_TEXTURE_OBJECT_H
 
-#include "cuda_ide_helpers.h"
+#include "utilities/ide_helpers.h"
 
 #include <memory>
 #include <type_traits>
@@ -13,8 +13,9 @@
 #include <driver_types.h>
 #include <texture_indirect_functions.h>
 
+#include "vector_types/vector_type_traits.h"
+
 #include "array3d.h"
-#include "vector_type_traits.h"
 #include "texture_view.h"
 #include "surface_object.h"
 

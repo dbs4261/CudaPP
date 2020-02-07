@@ -5,7 +5,7 @@
 #ifndef CUDAPP_SURFACE_OBJECT_H
 #define CUDAPP_SURFACE_OBJECT_H
 
-#include "cuda_ide_helpers.h"
+#include "utilities/ide_helpers.h"
 
 #include <cassert>
 #include <memory>
@@ -13,6 +13,8 @@
 #include <surface_types.h>
 #include <surface_indirect_functions.h>
 #include <driver_types.h>
+
+#include "utilities/memory_helpers.h"
 
 #include "array3d.h"
 #include "surface_view.h"
@@ -220,8 +222,8 @@ template <typename T>
 template <typename T>
 class SurfaceObject<T, 3> : public detail::SurfaceObject<T, 3> {
  public:
-  using value_type = typename detail::SurfaceObject<T, 2>::value_type;
-  static constexpr std::size_t Dims = detail::SurfaceObject<T, 2>::Dims;
+  using value_type = typename detail::SurfaceObject<T, 3>::value_type;
+  static constexpr std::size_t Dims = detail::SurfaceObject<T, 3>::Dims;
 
   SurfaceObject() : SurfaceObject(1, 1, 1) {}
   explicit SurfaceObject<T, 3>(std::shared_ptr<Array3D<T>> _array_ptr)

@@ -5,7 +5,7 @@
 #ifndef CUDAPP_MIPMAPPED_ARRAY_H
 #define CUDAPP_MIPMAPPED_ARRAY_H
 
-#include "cuda_ide_helpers.h"
+#include "utilities/ide_helpers.h"
 
 #include <cassert>
 #include <utility>
@@ -15,8 +15,9 @@
 #include <driver_types.h>
 #include <cuda.h>
 
-#include "vector_type_traits.h"
-#include "cuda_helpers.h"
+#include "utilities/memory_helpers.h"
+#include "vector_types/vector_type_traits.h"
+
 #include "array3d.h"
 
 namespace cuda {
@@ -53,7 +54,14 @@ struct MipmappedArray {
   }
   
   MipmappedArray<T>& operator=(const MipmappedArray<T>& other) {
-    CudaCatchError(cudaFreeMipmappedArray(array));
+    if (other.array != array) {
+      CudaCatchError(cudaFreeMipmappedArray(array));
+    }
+    extent = other.extent;
+    levels = other.levels;
+    array = other.array;
+    flags = other.flags;
+    return *this;
   }
 
   cudaMipmappedArray* MipmappedArrayPtr() {
