@@ -19,6 +19,9 @@ set(CUDA_COMPILED_ARCH "sm_75")
 
 add_library(cudapp INTERFACE)
 target_sources(cudapp INTERFACE
+  ${CMAKE_CURRENT_LIST_DIR}/allocators/device_allocator.h
+  ${CMAKE_CURRENT_LIST_DIR}/allocators/managed_allocator.h
+  ${CMAKE_CURRENT_LIST_DIR}/allocators/pinned_allocator.h
   ${CMAKE_CURRENT_LIST_DIR}/arrays/array3d.h
   ${CMAKE_CURRENT_LIST_DIR}/arrays/mipmapped_array.h
   ${CMAKE_CURRENT_LIST_DIR}/arrays/mipmapped_texture_object.h
