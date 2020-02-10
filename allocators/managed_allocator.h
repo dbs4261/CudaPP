@@ -1,5 +1,5 @@
 //
-// Created by developer on 2/5/20.
+// Created by Daniel Simon on 2/5/20.
 //
 
 #ifndef CUDAPP_MANAGED_ALLOCATOR_H

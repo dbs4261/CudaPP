@@ -1,5 +1,5 @@
 //
-// Created by developer on 2/5/20.
+// Created by Daniel Simon on 2/5/20.
 //
 
 #ifndef CUDAPP_IDE_HELPERS_H
@@ -11,7 +11,9 @@
 #ifdef __JETBRAINS_IDE__
 
 #error "Compiler should never see this. This is just for static analysis."
+#ifndef __cplusplus
 #define __cplusplus 201703L
+#endif
 #define __CUDACC__ 1
 #define __CUDA_ARCH__ 1
 
