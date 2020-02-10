@@ -29,6 +29,7 @@ target_sources(cudapp INTERFACE
   ${CMAKE_CURRENT_LIST_DIR}/arrays/surface_view.h
   ${CMAKE_CURRENT_LIST_DIR}/arrays/texture_object.h
   ${CMAKE_CURRENT_LIST_DIR}/arrays/texture_view.h
+  ${CMAKE_CURRENT_LIST_DIR}/functions/kernel_launchers.h
   ${CMAKE_CURRENT_LIST_DIR}/utilities/ide_helpers.h
   ${CMAKE_CURRENT_LIST_DIR}/utilities/memory_helpers.h
   ${CMAKE_CURRENT_LIST_DIR}/vector_types/vector_type_traits.h
