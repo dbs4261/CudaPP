@@ -10,40 +10,48 @@
 #include <new>
 #include <utility>
 
+#include "exceptions/cuda_exception.h"
+
 namespace cudapp {
 
 template <typename T>
 class PinnedAllocator {
  public:
   typedef T value_type;
-  PinnedAllocator() = default;
+  constexpr PinnedAllocator() noexcept = default;
 
   template <typename U>
-  constexpr PinnedAllocator(const PinnedAllocator<U>&) noexcept {}
+  constexpr explicit PinnedAllocator(const PinnedAllocator<U>&) noexcept {}
 
-  T* allocate(std::size_t n) {
+  T* allocate(std::size_t n) noexcept(false) {
     if (n > std::size_t(-1) / sizeof(T)) {
       throw std::bad_alloc();
     }
     T* pointer = nullptr;
-    if (cudaMallocHost(reinterpret_cast<void**>(&pointer), n * sizeof(T)) == cudaSuccess) {
+    cudaError_t ret = cudaMallocHost(reinterpret_cast<void**>(&pointer), n * sizeof(T));
+    if (ret == cudaSuccess) {
       return pointer;
+    } else {
+      throw CudaException(ret);
     }
-    throw std::bad_alloc();
   }
 
   void deallocate(T* pointer, std::size_t) noexcept {
-    cudaFreeHost(pointer);
+    cudaError_t ret = cudaFreeHost(pointer);
+    if (ret != cudaSuccess) {
+      // Uncatchable exception
+      throw CudaException(ret);
+    }
   }
 };
 
 template <class T, class U>
-__host__ __device__ bool operator==(const PinnedAllocator<T>&, const PinnedAllocator<U>&) {
+__host__ __device__ constexpr bool operator==(const PinnedAllocator<T>&, const PinnedAllocator<U>&) {
   return true;
 }
 
 template <class T, class U>
-__host__ __device__ bool operator!=(const PinnedAllocator<T>&, const PinnedAllocator<U>&) {
+__host__ __device__ constexpr bool operator!=(const PinnedAllocator<T>&, const PinnedAllocator<U>&) {
   return false;
 }
 

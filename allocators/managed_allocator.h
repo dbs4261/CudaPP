@@ -10,6 +10,8 @@
 #include <new>
 #include <utility>
 
+#include "exceptions/cuda_exception.h"
+
 namespace cudapp {
 
 template <typename T>
@@ -22,41 +24,47 @@ class ManagedAllocator {
   ManagedAllocator() = default;
 
   template <typename U>
-  constexpr ManagedAllocator(const ManagedAllocator<U>&) noexcept {}
+  constexpr explicit ManagedAllocator(const ManagedAllocator<U>&) noexcept {}
 
-  T* allocate(std::size_t n) {
+  T* allocate(std::size_t n) noexcept(false) {
     if (n > std::size_t(-1) / sizeof(T)) {
       throw std::bad_alloc();
     }
     T* pointer = nullptr;
-    if (cudaMallocManaged(reinterpret_cast<void**>(&pointer), n * sizeof(T)) == cudaSuccess) {
+    cudaError_t ret = cudaMallocManaged(reinterpret_cast<void**>(&pointer), n * sizeof(T));
+    if (ret == cudaSuccess) {
       return pointer;
+    } else {
+      throw CudaException(ret);
     }
-    throw std::bad_alloc();
   }
 
   void deallocate(T* pointer, std::size_t) noexcept {
-    cudaFree(pointer);
+    cudaError_t ret = cudaFree(pointer);
+    if (ret != cudaSuccess) {
+      // Uncatchable exception
+      throw CudaException(ret);
+    }
   }
 };
 
 template <class T, class U>
-__host__ __device__ bool operator==(const ManagedAllocator<T>&, const ManagedAllocator<U>&) {
+__host__ __device__ constexpr bool operator==(const ManagedAllocator<T>&, const ManagedAllocator<U>&) noexcept {
   return true;
 }
 
 template <class T, class U>
-__host__ __device__ bool operator==(const ManagedAllocator<T>&, const DeviceAllocator<U>&) {
+__host__ __device__ constexpr bool operator==(const ManagedAllocator<T>&, const DeviceAllocator<U>&) noexcept {
   return true;
 }
 
 template <class T, class U>
-__host__ __device__ bool operator!=(const ManagedAllocator<T>&, const ManagedAllocator<U>&) {
+__host__ __device__ constexpr bool operator!=(const ManagedAllocator<T>&, const ManagedAllocator<U>&) noexcept {
   return false;
 }
 
 template <class T, class U>
-__host__ __device__ bool operator!=(const ManagedAllocator<T>&, const DeviceAllocator<U>&) {
+__host__ __device__ constexpr bool operator!=(const ManagedAllocator<T>&, const DeviceAllocator<U>&) noexcept {
   return false;
 }
 
