@@ -15,7 +15,7 @@
 #include "utilities/memory_helpers.h"
 #include "vector_types/vector_type_traits.h"
 
-namespace cuda {
+namespace cudapp {
 
 template <typename T>
 class CudaArray {

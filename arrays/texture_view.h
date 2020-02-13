@@ -12,7 +12,7 @@
 #include <texture_types.h>
 #include <texture_indirect_functions.h>
 
-namespace cuda {
+namespace cudapp {
 
 namespace detail {
 

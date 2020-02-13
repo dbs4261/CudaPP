@@ -19,7 +19,7 @@
 #include "texture_view.h"
 #include "surface_object.h"
 
-namespace cuda {
+namespace cudapp {
 
 namespace detail {
 

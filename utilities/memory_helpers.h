@@ -5,11 +5,14 @@
 #ifndef CUDAPP_CUDA_HELPERS_H
 #define CUDAPP_CUDA_HELPERS_H
 
-#include "cuda_ide_helpers.h"
+#include "ide_helpers.h"
 
-#include <cuda_runtime.h>
+#include <algorithm>
+#include <cassert>
 
-namespace cuda {
+#include <driver_functions.h>
+
+namespace cudapp {
 
 cudaMemcpy3DParms BlankMemcpy3DParams() {
   cudaMemcpy3DParms params;

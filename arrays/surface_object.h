@@ -19,7 +19,7 @@
 #include "cuda_array.h"
 #include "surface_view.h"
 
-namespace cuda {
+namespace cudapp {
 
 template <typename T, std::size_t Dimensions, bool NormalizedFloat, bool NormalizedCoordinates>
 class TextureObject;

@@ -13,7 +13,7 @@
 #include <surface_types.h>
 #include <surface_indirect_functions.h>
 
-namespace cuda {
+namespace cudapp {
 
 namespace detail {
 

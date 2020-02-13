@@ -20,7 +20,7 @@
 
 #include "cuda_array.h"
 
-namespace cuda {
+namespace cudapp {
 
 template <typename T>
 struct MipmappedArray {
