@@ -16,7 +16,7 @@
 
 #include "utilities/memory_helpers.h"
 
-#include "array3d.h"
+#include "cuda_array.h"
 #include "surface_view.h"
 
 namespace cuda {
@@ -35,21 +35,21 @@ class SurfaceObject {
   using value_type = T;
   static constexpr std::size_t Dims = Dimensions;
 
-  explicit SurfaceObject(std::shared_ptr<Array3D<T>> _array_ptr) : array_ptr(_array_ptr), surface(0) {}
+  explicit SurfaceObject(std::shared_ptr<CudaArray<T>> _array_ptr) : array_ptr(_array_ptr), surface(0) {}
   SurfaceObject(std::size_t w, std::size_t h, std::size_t d, unsigned int flags=0)
-      : SurfaceObject(std::make_shared<Array3D<T>>(w, h, d,
+      : SurfaceObject(std::make_shared<CudaArray<T>>(w, h, d,
           flags | static_cast<unsigned int>(cudaArraySurfaceLoadStore))) {}
   SurfaceObject(cudaExtent _extent, unsigned int flags=0)
-      : SurfaceObject(std::make_shared<Array3D<T>>(_extent,
+      : SurfaceObject(std::make_shared<CudaArray<T>>(_extent,
           flags | static_cast<unsigned int>(cudaArraySurfaceLoadStore))) {}
   SurfaceObject(const T* _data, std::size_t w, std::size_t h, std::size_t d, unsigned int flags=0)
-      : SurfaceObject(std::make_shared<Array3D<T>>(_data, w, h, d,
+      : SurfaceObject(std::make_shared<CudaArray<T>>(_data, w, h, d,
           flags | static_cast<unsigned int>(cudaArraySurfaceLoadStore))) {}
   SurfaceObject(const T* _data, cudaExtent _extent, unsigned int flags=0)
-      : SurfaceObject(std::make_shared<Array3D<T>>(_data, _extent,
+      : SurfaceObject(std::make_shared<CudaArray<T>>(_data, _extent,
           flags | static_cast<unsigned int>(cudaArraySurfaceLoadStore))) {}
 
-  SurfaceObject(const SurfaceObject<T, Dims>& other) : array_ptr(std::make_shared<Array3D<T>>(*other.array_ptr)), surface(0) {}
+  SurfaceObject(const SurfaceObject<T, Dims>& other) : array_ptr(std::make_shared<CudaArray<T>>(*other.array_ptr)), surface(0) {}
   SurfaceObject(SurfaceObject<T, Dims>&& other) : array_ptr(other.array_ptr), surface(0) {}
 
   ~SurfaceObject() {
@@ -63,7 +63,7 @@ class SurfaceObject {
       CudaCatchError(cudaDestroySurfaceObject(surface));
       surface = 0;
     }
-    this->array_ptr = std::make_shared<Array3D<T>>(*other.array_ptr);
+    this->array_ptr = std::make_shared<CudaArray<T>>(*other.array_ptr);
     return *this;
   }
 
@@ -76,11 +76,11 @@ class SurfaceObject {
     return *this;
   }
 
-  std::shared_ptr<Array3D<T>> Array() {
+  std::shared_ptr<CudaArray<T>> Array() {
     return this->array;
   }
 
-  std::shared_ptr<const Array3D<T>> Array() const {
+  std::shared_ptr<const CudaArray<T>> Array() const {
     return this->array;
   }
 
@@ -115,7 +115,7 @@ class SurfaceObject {
     this->array_ptr->Set(_data);
   }
 
-  void Set(const Array3D<T>& other) {
+  void Set(const CudaArray<T>& other) {
     this->array_ptr->Set(other);
   }
 
@@ -133,7 +133,7 @@ class SurfaceObject {
   friend cuda::TextureObject<T, Dimensions, false, false>;
 
  protected:
-  std::shared_ptr<Array3D<T>> array_ptr;
+  std::shared_ptr<CudaArray<T>> array_ptr;
   mutable cudaSurfaceObject_t surface;
 };
 
@@ -154,7 +154,7 @@ class SurfaceObject<T, 1> : public detail::SurfaceObject<T, 1> {
   static constexpr std::size_t Dims = detail::SurfaceObject<T, 1>::Dims;
 
   SurfaceObject() : SurfaceObject(1) {}
-  explicit SurfaceObject(std::shared_ptr<Array3D<T>> _array_ptr)
+  explicit SurfaceObject(std::shared_ptr<CudaArray<T>> _array_ptr)
       : detail::SurfaceObject<T, Dims>(_array_ptr) {
     assert(this->array_ptr->Extent().width != 0);
     assert(this->array_ptr->Extent().height == 0);
@@ -163,11 +163,11 @@ class SurfaceObject<T, 1> : public detail::SurfaceObject<T, 1> {
   SurfaceObject(std::size_t width) : detail::SurfaceObject<T, Dims>(width, 0, 0) {}
   SurfaceObject(const T* _data, std::size_t width) : detail::SurfaceObject<T, Dims>(_data, width) {}
 
-  explicit SurfaceObject(const SurfaceObject<T, Dims>& other) : SurfaceObject(std::make_shared<Array3D<T>>(*other.array_ptr)) {}
+  explicit SurfaceObject(const SurfaceObject<T, Dims>& other) : SurfaceObject(std::make_shared<CudaArray<T>>(*other.array_ptr)) {}
   explicit SurfaceObject(SurfaceObject<T, Dims>&& other) : SurfaceObject(other.array_ptr) {}
 
   template <bool NormalizedFloat, bool NormalizedCoordinates>
-  explicit SurfaceObject(const TextureObject<T, Dims, NormalizedFloat, NormalizedCoordinates>& other) : SurfaceObject(std::make_shared<Array3D<T>>(*other.array_ptr)) {}
+  explicit SurfaceObject(const TextureObject<T, Dims, NormalizedFloat, NormalizedCoordinates>& other) : SurfaceObject(std::make_shared<CudaArray<T>>(*other.array_ptr)) {}
   template <bool NormalizedFloat, bool NormalizedCoordinates>
   explicit SurfaceObject(TextureObject<T, Dims, NormalizedFloat, NormalizedCoordinates>&& other) : SurfaceObject(other.array_ptr) {}
 
@@ -188,7 +188,7 @@ template <typename T>
   static constexpr std::size_t Dims = detail::SurfaceObject<T, 2>::Dims;
 
   SurfaceObject() : SurfaceObject(1, 1) {}
-  explicit SurfaceObject(std::shared_ptr<Array3D<T>> _array_ptr)
+  explicit SurfaceObject(std::shared_ptr<CudaArray<T>> _array_ptr)
       : detail::SurfaceObject<T, Dims>(_array_ptr) {
     assert(this->array_ptr->Extent().width != 0);
     assert(this->array_ptr->Extent().height != 0);
@@ -197,11 +197,11 @@ template <typename T>
   SurfaceObject(std::size_t width, std::size_t height) : detail::SurfaceObject<T, Dims>(width, height, 0) {}
   SurfaceObject(const T* _data, std::size_t width, std::size_t height) : detail::SurfaceObject<T, Dims>(_data, width, height, 0) {}
 
-  explicit SurfaceObject(const SurfaceObject<T, Dims>& other) : SurfaceObject(std::make_shared<Array3D<T>>(*other.array_ptr)) {}
+  explicit SurfaceObject(const SurfaceObject<T, Dims>& other) : SurfaceObject(std::make_shared<CudaArray<T>>(*other.array_ptr)) {}
   explicit SurfaceObject(SurfaceObject<T, Dims>&& other) : SurfaceObject(other.array_ptr) {}
 
   template <bool NormalizedFloat, bool NormalizedCoordinates>
-  explicit SurfaceObject(const TextureObject<T, Dims, NormalizedFloat,NormalizedCoordinates>& other) : SurfaceObject(std::make_shared<Array3D<T>>(*other.array_ptr)) {}
+  explicit SurfaceObject(const TextureObject<T, Dims, NormalizedFloat,NormalizedCoordinates>& other) : SurfaceObject(std::make_shared<CudaArray<T>>(*other.array_ptr)) {}
   template <bool NormalizedFloat, bool NormalizedCoordinates>
   explicit SurfaceObject(TextureObject<T, Dims, NormalizedFloat, NormalizedCoordinates>&& other) : SurfaceObject(other.array_ptr) {}
 
@@ -226,7 +226,7 @@ class SurfaceObject<T, 3> : public detail::SurfaceObject<T, 3> {
   static constexpr std::size_t Dims = detail::SurfaceObject<T, 3>::Dims;
 
   SurfaceObject() : SurfaceObject(1, 1, 1) {}
-  explicit SurfaceObject<T, 3>(std::shared_ptr<Array3D<T>> _array_ptr)
+  explicit SurfaceObject<T, 3>(std::shared_ptr<CudaArray<T>> _array_ptr)
       : detail::SurfaceObject<T, Dims>(_array_ptr) {
     assert(this->array_ptr->Extent().width != 0);
     assert(this->array_ptr->Extent().height != 0);
@@ -235,11 +235,11 @@ class SurfaceObject<T, 3> : public detail::SurfaceObject<T, 3> {
   SurfaceObject(std::size_t width, std::size_t height, std::size_t depth) : detail::SurfaceObject<T, Dims>(width, height, depth) {}
   SurfaceObject(const T* _data, std::size_t width, std::size_t height, std::size_t depth) : detail::SurfaceObject<T, Dims>(_data, width, height, depth) {}
 
-  explicit SurfaceObject(const SurfaceObject<T, Dims>& other) : SurfaceObject(std::make_shared<Array3D<T>>(*other.array_ptr)) {}
+  explicit SurfaceObject(const SurfaceObject<T, Dims>& other) : SurfaceObject(std::make_shared<CudaArray<T>>(*other.array_ptr)) {}
   explicit SurfaceObject(SurfaceObject<T, Dims>&& other) : SurfaceObject(other.array_ptr) {}
 
   template <bool NormalizedFloat, bool NormalizedCoordinates>
-  explicit SurfaceObject(const TextureObject<T, Dims, NormalizedFloat, NormalizedCoordinates>& other) : SurfaceObject(std::make_shared<Array3D<T>>(*other.array_ptr)) {}
+  explicit SurfaceObject(const TextureObject<T, Dims, NormalizedFloat, NormalizedCoordinates>& other) : SurfaceObject(std::make_shared<CudaArray<T>>(*other.array_ptr)) {}
   template <bool NormalizedFloat, bool NormalizedCoordinates>
   explicit SurfaceObject(TextureObject<T, Dims, NormalizedFloat, NormalizedCoordinates>&& other) : SurfaceObject(other.array_ptr) {}
 

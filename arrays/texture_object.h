@@ -15,7 +15,7 @@
 
 #include "vector_types/vector_type_traits.h"
 
-#include "array3d.h"
+#include "cuda_array.h"
 #include "texture_view.h"
 #include "surface_object.h"
 
@@ -32,7 +32,7 @@ template <typename T, std::size_t Dimensions, bool NormalizedFloat, bool Normali
 class TextureObject {
   static_assert(sizeof(T) != 0 and Dimensions > 0 and Dimensions <= 3, "Texture must have 1, 2 or 3 dimensions");
  public:
-  TextureObject(std::shared_ptr<Array3D<T>> _array_ptr, cudaTextureDesc _texture_description)
+  TextureObject(std::shared_ptr<CudaArray<T>> _array_ptr, cudaTextureDesc _texture_description)
       : texture_desc(_texture_description), array_ptr(_array_ptr), texture(0), modified(true) {
   #ifdef __cpp_if_constexpr
     if constexpr (NormalizedFloat) {
@@ -46,20 +46,20 @@ class TextureObject {
     texture_desc.normalizedCoords = static_cast<int>(NormalizedCoordinates);
   }
 
-  explicit TextureObject(std::shared_ptr<Array3D<T>> _array_ptr)
+  explicit TextureObject(std::shared_ptr<CudaArray<T>> _array_ptr)
       : TextureObject(_array_ptr, BlankTextureDesc()) {}
 
   TextureObject(std::size_t w, std::size_t h, std::size_t d, cudaTextureDesc _texture_description = BlankTextureDesc(), unsigned int flags = 0)
-      : TextureObject(std::make_shared<Array3D<T>>(w, h, d, flags | static_cast<unsigned int>(cudaArrayTextureGather)), _texture_description) {}
+      : TextureObject(std::make_shared<CudaArray<T>>(w, h, d, flags | static_cast<unsigned int>(cudaArrayTextureGather)), _texture_description) {}
 
   TextureObject(cudaExtent _extent, cudaTextureDesc _texture_description = BlankTextureDesc(), unsigned int flags = 0)
-      : TextureObject(std::make_shared<Array3D<T>>(_extent, flags | static_cast<unsigned int>(cudaArrayTextureGather)), _texture_description) {}
+      : TextureObject(std::make_shared<CudaArray<T>>(_extent, flags | static_cast<unsigned int>(cudaArrayTextureGather)), _texture_description) {}
 
   TextureObject(const T* _data, std::size_t w, std::size_t h, std::size_t d, cudaTextureDesc _texture_description = BlankTextureDesc(), unsigned int flags = 0)
-      : TextureObject(std::make_shared<Array3D<T>>(_data, w, h, d, flags | static_cast<unsigned int>(cudaArrayTextureGather)), _texture_description) {}
+      : TextureObject(std::make_shared<CudaArray<T>>(_data, w, h, d, flags | static_cast<unsigned int>(cudaArrayTextureGather)), _texture_description) {}
 
   TextureObject(const T* _data, cudaExtent _extent, cudaTextureDesc _texture_description = BlankTextureDesc(), unsigned int flags = 0)
-      : TextureObject(std::make_shared<Array3D<T>>(_data, _extent, flags | static_cast<unsigned int>(cudaArrayTextureGather)), _texture_description) {}
+      : TextureObject(std::make_shared<CudaArray<T>>(_data, _extent, flags | static_cast<unsigned int>(cudaArrayTextureGather)), _texture_description) {}
 
   // Both converters and copy/move
   template <bool OtherNormalizedFloat, bool OtherNormalizedCoordinates>
@@ -92,11 +92,11 @@ class TextureObject {
     return *this;
   }
 
-  std::shared_ptr<Array3D<T>> Array() {
+  std::shared_ptr<CudaArray<T>> Array() {
     return this->array;
   }
 
-  std::shared_ptr<const Array3D<T>> Array() const {
+  std::shared_ptr<const CudaArray<T>> Array() const {
     return this->array;
   }
 
@@ -158,7 +158,7 @@ class TextureObject {
     this->array_ptr->Set(_data);
   }
 
-  void Set(const Array3D<T>& other) {
+  void Set(const CudaArray<T>& other) {
     this->array_ptr->Set(other);
   }
 
@@ -179,7 +179,7 @@ class TextureObject {
   }
 
   cudaTextureDesc texture_desc;
-  std::shared_ptr<Array3D<T>> array_ptr;
+  std::shared_ptr<CudaArray<T>> array_ptr;
   mutable cudaTextureObject_t texture;
   mutable bool modified;
 };
@@ -263,7 +263,7 @@ class TextureObject<T, 1, NormalizedFloat, NormalizedCoordinates> : public detai
  public:
   static constexpr int Dimensions = 1;
   TextureObject() : TextureObject(1) {}
-  explicit TextureObject(std::shared_ptr<Array3D<T>> _array_ptr)
+  explicit TextureObject(std::shared_ptr<CudaArray<T>> _array_ptr)
       : detail::TextureObject<T, Dimensions, NormalizedFloat, NormalizedCoordinates>(_array_ptr) {
     assert(this->array_ptr->Extent().width != 0);
     assert(this->array_ptr->Extent().height == 0);
@@ -281,7 +281,7 @@ class TextureObject<T, 1, NormalizedFloat, NormalizedCoordinates> : public detai
   explicit TextureObject(TextureObject<T, Dimensions, OtherNormalizedFloat, OtherNormalizedCoordinates>&& other)
       : detail::TextureObject<T, Dimensions, NormalizedFloat, NormalizedCoordinates>(other.array_ptr, other.texture_desc) {}
   explicit TextureObject(const SurfaceObject<T, Dimensions>& other)
-      : TextureObject(std::make_shared<Array3D<T>>(*other.array_ptr)) {}
+      : TextureObject(std::make_shared<CudaArray<T>>(*other.array_ptr)) {}
   explicit TextureObject(SurfaceObject<T, Dimensions>&& other)
       : TextureObject(other.array_ptr) {}
 
@@ -297,7 +297,7 @@ template <typename T, bool NormalizedFloat, bool NormalizedCoordinates>
  public:
   static constexpr int Dimensions = 2;
   TextureObject() : TextureObject(1, 1) {}
-  explicit TextureObject(std::shared_ptr<Array3D<T>> _array_ptr)
+  explicit TextureObject(std::shared_ptr<CudaArray<T>> _array_ptr)
       : detail::TextureObject<T, Dimensions, NormalizedFloat, NormalizedCoordinates>(_array_ptr) {
     assert(this->array_ptr->Extent().width != 0);
     assert(this->array_ptr->Extent().height != 0);
@@ -315,7 +315,7 @@ template <typename T, bool NormalizedFloat, bool NormalizedCoordinates>
   explicit TextureObject(TextureObject<T, Dimensions, OtherNormalizedFloat, OtherNormalizedCoordinates>&& other)
       : detail::TextureObject<T, Dimensions, NormalizedFloat, NormalizedCoordinates>(other.array_ptr, other.texture_desc) {}
   explicit TextureObject(const SurfaceObject<T, Dimensions>& other)
-      : TextureObject(std::make_shared<Array3D<T>>(*other.array_ptr)) {}
+      : TextureObject(std::make_shared<CudaArray<T>>(*other.array_ptr)) {}
   explicit TextureObject(SurfaceObject<T, Dimensions>&& other)
       : TextureObject(other.array_ptr) {}
 
@@ -335,7 +335,7 @@ template <typename T, bool NormalizedFloat, bool NormalizedCoordinates>
  public:
   static constexpr int Dimensions = 3;
   TextureObject() : TextureObject(1, 1, 1) {}
-  explicit TextureObject(std::shared_ptr<Array3D<T>> _array_ptr)
+  explicit TextureObject(std::shared_ptr<CudaArray<T>> _array_ptr)
       : detail::TextureObject<T, Dimensions, NormalizedFloat, NormalizedCoordinates>(_array_ptr) {
     assert(this->array_ptr->Extent().width != 0);
     assert(this->array_ptr->Extent().height != 0);
@@ -353,7 +353,7 @@ template <typename T, bool NormalizedFloat, bool NormalizedCoordinates>
   explicit TextureObject(TextureObject<T, Dimensions, OtherNormalizedFloat, OtherNormalizedCoordinates>&& other)
       : detail::TextureObject<T, Dimensions, NormalizedFloat, NormalizedCoordinates>(other.array_ptr, other.texture_desc) {}
   explicit TextureObject(const SurfaceObject<T, Dimensions>& other)
-      : TextureObject(std::make_shared<Array3D<T>>(*other.array_ptr)) {}
+      : TextureObject(std::make_shared<CudaArray<T>>(*other.array_ptr)) {}
   explicit TextureObject(SurfaceObject<T, Dimensions>&& other)
       : TextureObject(other.array_ptr) {}
 

@@ -2,8 +2,8 @@
 // Created by Daniel Simon on 8/12/19.
 //
 
-#ifndef CUDAPP_ARRAY3D_H
-#define CUDAPP_ARRAY3D_H
+#ifndef CUDAPP_CUDA_ARRAY_H
+#define CUDAPP_CUDA_ARRAY_H
 
 #include "utilities/ide_helpers.h"
 
@@ -18,37 +18,37 @@
 namespace cuda {
 
 template <typename T>
-class Array3D {
+class CudaArray {
   static_assert(not std::is_same<T, void>::value, "Template type cannot be void");
  public:
-  Array3D() : Array3D<T>(1, 1, 1) {}
-  Array3D(std::size_t w, std::size_t h=0, std::size_t d=0, unsigned int _flags=0)
-      : Array3D(make_cudaExtent(w, h, d), _flags) {}
-  explicit Array3D(cudaExtent _extent, unsigned int _flags=0)
+  CudaArray() : CudaArray<T>(1, 1, 1) {}
+  CudaArray(std::size_t w, std::size_t h=0, std::size_t d=0, unsigned int _flags=0)
+      : CudaArray(make_cudaExtent(w, h, d), _flags) {}
+  explicit CudaArray(cudaExtent _extent, unsigned int _flags=0)
       : extent(_extent), array(nullptr), flags(_flags) {
     auto desc = cudaCreateChannelDesc<T>();
     CudaCatchError(cudaMalloc3DArray(&array, &desc, extent, flags));
   }
-  Array3D(const T* _data, std::size_t w, std::size_t h=0, std::size_t d=0, unsigned int _flags=0)
-      : Array3D<T>(_data, make_cudaExtent(w, h, d), _flags) {}
-  Array3D(const T* _data, cudaExtent _extent, unsigned int _flags=0)
-      : Array3D<T>(_extent, _flags) {
+  CudaArray(const T* _data, std::size_t w, std::size_t h=0, std::size_t d=0, unsigned int _flags=0)
+      : CudaArray<T>(_data, make_cudaExtent(w, h, d), _flags) {}
+  CudaArray(const T* _data, cudaExtent _extent, unsigned int _flags=0)
+      : CudaArray<T>(_extent, _flags) {
     this->Set(_data);
   }
 
-  Array3D(const Array3D<T>& other) : Array3D(other, other.flags) {}
-  Array3D(const Array3D<T>& other, unsigned int _flags=0) : Array3D(other.extent, _flags) {
+  CudaArray(const CudaArray<T>& other) : CudaArray(other, other.flags) {}
+  CudaArray(const CudaArray<T>& other, unsigned int _flags=0) : CudaArray(other.extent, _flags) {
     this->Set(other);
   }
-  Array3D(Array3D<T>&& other) noexcept : extent(std::move(extent)), array(std::move(other.array)), flags(other.flags) {
+  CudaArray(CudaArray<T>&& other) noexcept : extent(std::move(extent)), array(std::move(other.array)), flags(other.flags) {
     other.array = nullptr;
   }
 
-  ~Array3D() {
+  ~CudaArray() {
     CudaCatchError(cudaFreeArray(this->array));
   }
 
-  Array3D<T>& operator=(const Array3D<T>& other) {
+  CudaArray<T>& operator=(const CudaArray<T>& other) {
     if (other.array != this->array) {
       CudaCatchError(cudaFreeArray(this->array));
     }
@@ -58,7 +58,7 @@ class Array3D {
     return *this;
   }
 
-  Array3D<T>& operator=(Array3D<T>&& other) noexcept {
+  CudaArray<T>& operator=(CudaArray<T>&& other) noexcept {
     this->extent = other.extent;
     this->flags = other.flags;
     // We swap instead of moving the pointer. That way this->array gets destroyed when other is destructed.
@@ -82,7 +82,7 @@ class Array3D {
     CudaCatchError(cudaMemcpy3D(&params));
   }
 
-  void Set(const Array3D<T>& other) {
+  void Set(const CudaArray<T>& other) {
     assert(this->Size() == other.Size());
     cudaMemcpy3DParms params = Memcpy3DParamsDD(other.array, this->array, this->extent);
     CudaCatchError(cudaMemcpy3D(&params));
@@ -120,4 +120,4 @@ class Array3D {
 
 }
 
-#endif //CUDAPP_ARRAY3D_H
+#endif //CUDAPP_CUDA_ARRAY_H

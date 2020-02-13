@@ -18,7 +18,7 @@
 #include "utilities/memory_helpers.h"
 #include "vector_types/vector_type_traits.h"
 
-#include "array3d.h"
+#include "cuda_array.h"
 
 namespace cuda {
 
@@ -94,7 +94,7 @@ struct MipmappedArray {
     this->Pyramid();
   }
 
-  void Set(const Array3D<T>& other) {
+  void Set(const CudaArray<T>& other) {
     assert(this->Size() == other.Size());
     cudaMemcpy3DParms params = Memcpy3DParamsDD(other.array, this->ArrayPtr(0), extent);
     CudaCatchError(cudaMemcpy3D(&params));
