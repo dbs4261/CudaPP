@@ -34,7 +34,7 @@ class MipmappedTextureObject {
   static_assert(std::is_floating_point<T>::value or NormalizedFloat, "The result of texture addressing must be a float or else there is no point in using a mipmap");
  public:
   static constexpr bool NormalizedCoordinates = true;
-  MipmappedTextureObject(std::shared_ptr<MipmappedArray<T>> _array_ptr, cudaTextureDesc _texture_description)
+  MipmappedTextureObject(std::shared_ptr<MipmappedArray<T>> _array_ptr, cudaTextureDesc _texture_description) noexcept
       : texture_desc(_texture_description), array_ptr(_array_ptr), texture(0), modified(true) {
   #ifdef __cpp_if_constexpr
     if constexpr (NormalizedFloat) {
@@ -48,36 +48,39 @@ class MipmappedTextureObject {
     texture_desc.normalizedCoords = static_cast<int>(NormalizedCoordinates);
   }
 
-  explicit MipmappedTextureObject(std::shared_ptr<MipmappedArray<T>> _array_ptr)
+  explicit MipmappedTextureObject(std::shared_ptr<MipmappedArray<T>> _array_ptr) noexcept
       : MipmappedTextureObject(_array_ptr, BlankTextureDesc()) {}
 
-  MipmappedTextureObject(std::size_t w, std::size_t h, std::size_t d, std::size_t l, cudaTextureDesc _texture_description = BlankTextureDesc(), unsigned int flags = 0)
+  MipmappedTextureObject(std::size_t w, std::size_t h, std::size_t d, std::size_t l, cudaTextureDesc _texture_description = BlankTextureDesc(), unsigned int flags = 0) noexcept(false)
       : MipmappedTextureObject(std::make_shared<MipmappedArray<T>>(w, h, d, l, flags | static_cast<unsigned int>(cudaArrayTextureGather)), _texture_description) {}
 
-  MipmappedTextureObject(cudaExtent _extent, std::size_t l, cudaTextureDesc _texture_description = BlankTextureDesc(), unsigned int flags = 0)
+  MipmappedTextureObject(cudaExtent _extent, std::size_t l, cudaTextureDesc _texture_description = BlankTextureDesc(), unsigned int flags = 0) noexcept(false)
       : MipmappedTextureObject(std::make_shared<MipmappedArray<T>>(_extent, l, flags | static_cast<unsigned int>(cudaArrayTextureGather)), _texture_description) {}
 
-  MipmappedTextureObject(const T* _data, std::size_t w, std::size_t h, std::size_t d, std::size_t l, cudaTextureDesc _texture_description = BlankTextureDesc(), unsigned int flags = 0)
+  MipmappedTextureObject(const T* _data, std::size_t w, std::size_t h, std::size_t d, std::size_t l, cudaTextureDesc _texture_description = BlankTextureDesc(), unsigned int flags = 0) noexcept(false)
       : MipmappedTextureObject(std::make_shared<MipmappedArray<T>>(_data, w, h, d, l, flags | static_cast<unsigned int>(cudaArrayTextureGather)), _texture_description) {}
 
-  MipmappedTextureObject(const T* _data, cudaExtent _extent, std::size_t l, cudaTextureDesc _texture_description = BlankTextureDesc(), unsigned int flags = 0)
+  MipmappedTextureObject(const T* _data, cudaExtent _extent, std::size_t l, cudaTextureDesc _texture_description = BlankTextureDesc(), unsigned int flags = 0) noexcept(false)
       : MipmappedTextureObject(std::make_shared<MipmappedArray<T>>(_data, _extent, l, flags | static_cast<unsigned int>(cudaArrayTextureGather)), _texture_description) {}
 
   // Both converters and copy/move
   template <bool OtherNormalizedFloat>
-  explicit MipmappedTextureObject(const MipmappedTextureObject<T, Dimensions, OtherNormalizedFloat>& other)
+  explicit MipmappedTextureObject(const MipmappedTextureObject<T, Dimensions, OtherNormalizedFloat>& other) noexcept
       : MipmappedTextureObject(other.array_ptr, other.texture_desc) {}
   template <bool OtherNormalizedFloat>
-  explicit MipmappedTextureObject(MipmappedTextureObject<T, Dimensions, OtherNormalizedFloat>&& other)
+  explicit MipmappedTextureObject(MipmappedTextureObject<T, Dimensions, OtherNormalizedFloat>&& other) noexcept
       : MipmappedTextureObject(other.array_ptr, other.texture_desc) {}
 
   ~MipmappedTextureObject() {
     if (this->texture != 0) {
-      CudaCatchError(cudaDestroyTextureObject(this->texture));
+      cudaError_t ret = cudaDestroyTextureObject(this->texture);
+      if (ret != cudaSuccess) {
+        throw CudaException(ret);
+      }
     }
   }
 
-  MipmappedTextureObject& operator=(const MipmappedTextureObject<T, Dimensions, NormalizedCoordinates>& other) {
+  MipmappedTextureObject& operator=(const MipmappedTextureObject<T, Dimensions, NormalizedCoordinates>& other) noexcept {
     array_ptr = other.array_ptr;
     texture_desc = other.texture_desc;
     texture = other.texture;
@@ -85,7 +88,7 @@ class MipmappedTextureObject {
     return *this;
   }
 
-  MipmappedTextureObject& operator=(MipmappedTextureObject<T, Dimensions, NormalizedCoordinates>&& other) {
+  MipmappedTextureObject& operator=(MipmappedTextureObject<T, Dimensions, NormalizedCoordinates>&& other) noexcept {
     array_ptr = other.array_ptr;
     texture_desc = other.texture_desc;
     texture = other.texture;
@@ -94,15 +97,15 @@ class MipmappedTextureObject {
     return *this;
   }
 
-  std::shared_ptr<MipmappedArray<T>> Array() {
+  std::shared_ptr<MipmappedArray<T>> Array() noexcept {
     return this->array_ptr;
   }
 
-  std::shared_ptr<const MipmappedArray<T>> Array() const {
+  std::shared_ptr<const MipmappedArray<T>> Array() const noexcept {
     return this->array_ptr;
   }
 
-  void SetAddressMode(cudaTextureAddressMode mode, int dimension) {
+  void SetAddressMode(cudaTextureAddressMode mode, int dimension) noexcept {
     if (dimension == 0 or dimension < 0) {
       texture_desc.addressMode[0] = mode;
     }
@@ -115,7 +118,7 @@ class MipmappedTextureObject {
     modified = true;
   }
 
-  void SetBilinearInterpolate(typename std::enable_if<NormalizedFloat or std::is_floating_point<T>::value, bool>::type interpolate) {
+  void SetBilinearInterpolate(typename std::enable_if<NormalizedFloat or std::is_floating_point<T>::value, bool>::type interpolate) noexcept {
     if (interpolate) {
       texture_desc.filterMode = cudaTextureFilterMode::cudaFilterModeLinear;
     } else {
@@ -124,7 +127,7 @@ class MipmappedTextureObject {
     modified = true;
   }
 
-  void SetTrilinearInterpolate(typename std::enable_if<NormalizedFloat or std::is_floating_point<T>::value, bool>::type interpolate) {
+  void SetTrilinearInterpolate(typename std::enable_if<NormalizedFloat or std::is_floating_point<T>::value, bool>::type interpolate) noexcept {
     if (interpolate) {
       texture_desc.mipmapFilterMode = cudaTextureFilterMode::cudaFilterModeLinear;
     } else {
@@ -133,12 +136,12 @@ class MipmappedTextureObject {
     modified = true;
   }
 
-  void SetSRGBCorrection(bool correct) {
+  void SetSRGBCorrection(bool correct) noexcept {
     texture_desc.sRGB = static_cast<int>(correct);
     modified = true;
   }
 
-  void SetBorderColor(float c0, float c1 = 0.0f, float c2 = 0.0f, float c3 = 0.0f) {
+  void SetBorderColor(float c0, float c1 = 0.0f, float c2 = 0.0f, float c3 = 0.0f) noexcept {
     texture_desc.borderColor[0] = c0;
     texture_desc.borderColor[1] = c1;
     texture_desc.borderColor[2] = c2;
@@ -146,7 +149,7 @@ class MipmappedTextureObject {
     modified = true;
   }
 
-  void SetBorderColor(float4 val) {
+  void SetBorderColor(float4 val) noexcept {
     texture_desc.borderColor[0] = val.x;
     texture_desc.borderColor[1] = val.y;
     texture_desc.borderColor[2] = val.z;
@@ -154,47 +157,50 @@ class MipmappedTextureObject {
     modified = true;
   }
 
-  void SetMaxAnisotropy(unsigned int val) {
+  void SetMaxAnisotropy(unsigned int val) noexcept {
     texture_desc.maxAnisotropy = val;
     modified = true;
   }
 
-  void SetMipmapLevelClamp(float minimum, float maximum) {
+  void SetMipmapLevelClamp(float minimum, float maximum) noexcept {
     texture_desc.minMipmapLevelClamp = minimum;
     texture_desc.maxMipmapLevelClamp = maximum;
     modified = true;
   }
 
-  cudaResourceDesc ResourceDescription() const {
+  cudaResourceDesc ResourceDescription() const noexcept {
     cudaResourceDesc resource_desc;
     resource_desc.resType = cudaResourceType::cudaResourceTypeMipmappedArray;
     resource_desc.res.mipmap.mipmap = array_ptr->MipmappedArrayPtr();
     return resource_desc;
   }
 
-  cudaTextureDesc TextureDescription() const {
+  cudaTextureDesc TextureDescription() const noexcept {
     return texture_desc;
   }
 
-  void Set(T* _data) {
+  void Set(T* _data) noexcept(false) {
     this->array_ptr->Set(_data);
   }
 
-  void Set(const MipmappedArray<T>& other) {
+  void Set(const MipmappedArray<T>& other) noexcept(false) {
     this->array_ptr->Set(other);
   }
 
-  void Set(const SurfaceObject<T, Dimensions>& other) {
+  void Set(const SurfaceObject<T, Dimensions>& other) noexcept(false) {
     this->array_ptr->Set(other.array_ptr);
   }
 
   friend SurfaceObject<T, Dimensions>;
 
  protected:
-  void UpdateTexture() const {
+  void UpdateTexture() const noexcept(false) {
     if (modified) {
       cudaResourceDesc resource_desc = ResourceDescription();
-      CudaCatchError(cudaCreateTextureObject(&this->texture, &resource_desc, &this->texture_desc, nullptr));
+      cudaError_t ret = cudaCreateTextureObject(&this->texture, &resource_desc, &this->texture_desc, nullptr);
+      if (ret != cudaSuccess) {
+        throw CudaException(ret);
+      }
       modified = false;
     }
   }
@@ -208,29 +214,29 @@ class MipmappedTextureObject {
 }
 
 template <typename T, std::size_t Dimensions, bool NormalizedFloat>
-class MipmappedTextureObject : public cuda::detail::detail::MipmappedTextureObject<T, Dimensions, false> {
+class MipmappedTextureObject : public cudapp::detail::detail::MipmappedTextureObject<T, Dimensions, false> {
  public:
   static constexpr int channels = vector_channels_v<T>;
   using value_type = T;
-  using cuda::detail::detail::MipmappedTextureObject<T, Dimensions, false>::MipmappedTextureObject;
+  using cudapp::detail::detail::MipmappedTextureObject<T, Dimensions, false>::MipmappedTextureObject;
 
-  cuda::TextureView<value_type, Dimensions, true> View() const {
+  cudapp::TextureView<value_type, Dimensions, true> View() const noexcept(false) {
     this->UpdateTexture();
-    return cuda::TextureView<value_type, Dimensions, true>(this->texture,
+    return cudapp::TextureView<value_type, Dimensions, true>(this->texture,
         float3{this->array_ptr->Width(), this->array_ptr->Height(), this->array_ptr->Depth()});
   }
 };
 
 template <typename T, std::size_t Dimensions>
-class MipmappedTextureObject<T, Dimensions, true> : public cuda::detail::detail::MipmappedTextureObject<T, Dimensions, true> {
+class MipmappedTextureObject<T, Dimensions, true> : public cudapp::detail::detail::MipmappedTextureObject<T, Dimensions, true> {
  public:
   static constexpr int channels = vector_channels_v<T>;
   using value_type = composed_vector_type_t<float, channels>;
-  using cuda::detail::detail::MipmappedTextureObject<T, Dimensions, true>::MipmappedTextureObject;
+  using cudapp::detail::detail::MipmappedTextureObject<T, Dimensions, true>::MipmappedTextureObject;
 
-  cuda::TextureView<value_type, Dimensions, true> View() const {
+  cudapp::TextureView<value_type, Dimensions, true> View() const noexcept(false) {
     this->UpdateTexture();
-    return cuda::TextureView<value_type, Dimensions, true>(this->texture,
+    return cudapp::TextureView<value_type, Dimensions, true>(this->texture,
         float3{this->array_ptr->Width(), this->array_ptr->Height(), this->array_ptr->Depth()});
   }
 };
@@ -249,30 +255,30 @@ template <typename T, bool NormalizedFloat>
 class MipmappedTextureObject<T, 1, NormalizedFloat> : public detail::MipmappedTextureObject<T, 1, NormalizedFloat> {
  public:
   static constexpr int Dimensions = 1;
-  MipmappedTextureObject() : MipmappedTextureObject(1, 1) {}
-  explicit MipmappedTextureObject(std::shared_ptr<MipmappedArray<T>> _array_ptr)
+  MipmappedTextureObject() noexcept(false) : MipmappedTextureObject(1, 1) {}
+  explicit MipmappedTextureObject(std::shared_ptr<MipmappedArray<T>> _array_ptr) noexcept
       : detail::MipmappedTextureObject<T, Dimensions, NormalizedFloat>(_array_ptr) {
     assert(this->array_ptr->Extent().width != 0);
     assert(this->array_ptr->Extent().height == 0);
     assert(this->array_ptr->Extent().depth == 0);
   }
-  MipmappedTextureObject(std::size_t width, std::size_t _levels)
+  MipmappedTextureObject(std::size_t width, std::size_t _levels) noexcept(false)
       : detail::MipmappedTextureObject<T, Dimensions, NormalizedFloat>(width, 0, 0, _levels) {}
-  MipmappedTextureObject(const T* _data, std::size_t width, std::size_t _levels)
+  MipmappedTextureObject(const T* _data, std::size_t width, std::size_t _levels) noexcept(false)
       : detail::MipmappedTextureObject<T, Dimensions, NormalizedFloat>(_data, width, 0, 0, _levels) {}
 
   template <bool OtherNormalizedFloat>
-  explicit MipmappedTextureObject(const MipmappedTextureObject<T, Dimensions, OtherNormalizedFloat>& other)
+  explicit MipmappedTextureObject(const MipmappedTextureObject<T, Dimensions, OtherNormalizedFloat>& other) noexcept
       : detail::MipmappedTextureObject<T, Dimensions, NormalizedFloat>(other.array_ptr, other.texture_desc) {}
   template <bool OtherNormalizedFloat>
-  explicit MipmappedTextureObject(MipmappedTextureObject<T, Dimensions, OtherNormalizedFloat>&& other)
+  explicit MipmappedTextureObject(MipmappedTextureObject<T, Dimensions, OtherNormalizedFloat>&& other) noexcept
       : detail::MipmappedTextureObject<T, Dimensions, NormalizedFloat>(other.array_ptr, other.texture_desc) {}
 
-  std::size_t Width() const {
+  std::size_t Width() const noexcept {
     return this->array_ptr->Width();
   }
 
-  std::size_t Levels() const {
+  std::size_t Levels() const noexcept {
     return this->array_ptr->Levels();
   }
 };
@@ -281,34 +287,34 @@ template <typename T, bool NormalizedFloat>
 class MipmappedTextureObject<T, 2, NormalizedFloat> : public detail::MipmappedTextureObject<T, 2, NormalizedFloat> {
  public:
   static constexpr int Dimensions = 2;
-  MipmappedTextureObject() : MipmappedTextureObject(1, 1, 1) {}
-  explicit MipmappedTextureObject(std::shared_ptr<MipmappedArray<T>> _array_ptr)
+  MipmappedTextureObject() noexcept(false) : MipmappedTextureObject(1, 1, 1) {}
+  explicit MipmappedTextureObject(std::shared_ptr<MipmappedArray<T>> _array_ptr) noexcept
       : detail::MipmappedTextureObject<T, Dimensions, NormalizedFloat>(_array_ptr) {
     assert(this->array_ptr->Extent().width != 0);
     assert(this->array_ptr->Extent().height != 0);
     assert(this->array_ptr->Extent().depth == 0);
   }
-  MipmappedTextureObject(std::size_t width, std::size_t height, std::size_t _levels)
+  MipmappedTextureObject(std::size_t width, std::size_t height, std::size_t _levels) noexcept(false)
       : detail::MipmappedTextureObject<T, Dimensions, NormalizedFloat>(width, height, 0, _levels) {}
-  MipmappedTextureObject(const T* _data, std::size_t width, std::size_t height, std::size_t _levels)
+  MipmappedTextureObject(const T* _data, std::size_t width, std::size_t height, std::size_t _levels) noexcept(false)
       : detail::MipmappedTextureObject<T, Dimensions, NormalizedFloat>(_data, width, height, 0, _levels) {}
 
   template <bool OtherNormalizedFloat>
-  explicit MipmappedTextureObject(const MipmappedTextureObject<T, Dimensions, OtherNormalizedFloat>& other)
+  explicit MipmappedTextureObject(const MipmappedTextureObject<T, Dimensions, OtherNormalizedFloat>& other) noexcept
       : detail::MipmappedTextureObject<T, Dimensions, NormalizedFloat>(other.array_ptr, other.texture_desc) {}
   template <bool OtherNormalizedFloat>
-  explicit MipmappedTextureObject(MipmappedTextureObject<T, Dimensions, OtherNormalizedFloat>&& other)
+  explicit MipmappedTextureObject(MipmappedTextureObject<T, Dimensions, OtherNormalizedFloat>&& other) noexcept
       : detail::MipmappedTextureObject<T, Dimensions, NormalizedFloat>(other.array_ptr, other.texture_desc) {}
 
-  std::size_t Width() const {
+  std::size_t Width() const noexcept {
     return this->array_ptr->Width();
   }
 
-  std::size_t Height() const {
+  std::size_t Height() const noexcept {
     return this->array_ptr->Height();
   }
 
-  std::size_t Levels() const {
+  std::size_t Levels() const noexcept {
     return this->array_ptr->Levels();
   }
 };
@@ -317,38 +323,38 @@ template <typename T, bool NormalizedFloat>
 class MipmappedTextureObject<T, 3, NormalizedFloat> : public detail::MipmappedTextureObject<T, 3, NormalizedFloat> {
  public:
   static constexpr int Dimensions = 3;
-  MipmappedTextureObject() : MipmappedTextureObject(1, 1, 1, 1) {}
-  explicit MipmappedTextureObject(std::shared_ptr<MipmappedArray<T>> _array_ptr)
+  MipmappedTextureObject() noexcept(false) : MipmappedTextureObject(1, 1, 1, 1) {}
+  explicit MipmappedTextureObject(std::shared_ptr<MipmappedArray<T>> _array_ptr) noexcept
       : detail::MipmappedTextureObject<T, Dimensions, NormalizedFloat>(_array_ptr) {
     assert(this->array_ptr->Extent().width != 0);
     assert(this->array_ptr->Extent().height != 0);
     assert(this->array_ptr->Extent().depth != 0);
   }
-  MipmappedTextureObject(std::size_t width, std::size_t height, std::size_t depth, std::size_t _levels)
+  MipmappedTextureObject(std::size_t width, std::size_t height, std::size_t depth, std::size_t _levels) noexcept(false)
       : detail::MipmappedTextureObject<T, Dimensions, NormalizedFloat>(width, height, depth, _levels) {}
-  MipmappedTextureObject(const T* _data, std::size_t width, std::size_t height, std::size_t depth, std::size_t _levels)
+  MipmappedTextureObject(const T* _data, std::size_t width, std::size_t height, std::size_t depth, std::size_t _levels) noexcept(false)
       : detail::MipmappedTextureObject<T, Dimensions, NormalizedFloat>(_data, width, height, depth, _levels) {}
 
   template <bool OtherNormalizedFloat>
-  explicit MipmappedTextureObject(const MipmappedTextureObject<T, Dimensions, OtherNormalizedFloat>& other)
+  explicit MipmappedTextureObject(const MipmappedTextureObject<T, Dimensions, OtherNormalizedFloat>& other) noexcept
       : detail::MipmappedTextureObject<T, Dimensions, NormalizedFloat>(other.array_ptr, other.texture_desc) {}
   template <bool OtherNormalizedFloat>
-  explicit MipmappedTextureObject(MipmappedTextureObject<T, Dimensions, OtherNormalizedFloat>&& other)
+  explicit MipmappedTextureObject(MipmappedTextureObject<T, Dimensions, OtherNormalizedFloat>&& other) noexcept
       : detail::MipmappedTextureObject<T, Dimensions, NormalizedFloat>(other.array_ptr, other.texture_desc) {}
 
-  std::size_t Width() const {
+  std::size_t Width() const noexcept {
     return this->array_ptr->Width();
   }
 
-  std::size_t Height() const {
+  std::size_t Height() const noexcept {
     return this->array_ptr->Height();
   }
 
-  std::size_t Depth() const {
+  std::size_t Depth() const noexcept {
     return this->array_ptr->Depth();
   }
 
-  std::size_t Levels() const {
+  std::size_t Levels() const noexcept {
     return this->array_ptr->Levels();
   }
 };

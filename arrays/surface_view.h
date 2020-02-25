@@ -55,7 +55,7 @@ class SurfaceView<const T, 1> : public detail::SurfaceView<const T, 1> {
  public:
   using detail::SurfaceView<const T, 1>::SurfaceView;
 
-  __device__ __forceinline__ T Read(int x, cudaSurfaceBoundaryMode mode = cudaSurfaceBoundaryMode::cudaBoundaryModeTrap) const {
+  __device__ __forceinline__ T Read(int x, cudaSurfaceBoundaryMode mode = cudaSurfaceBoundaryMode::cudaBoundaryModeTrap) const noexcept(false) {
     #ifdef __CUDA_ARCH__
     return surf1Dread<T>(this->surface, sizeof(T) * x, mode);
     #endif
@@ -67,13 +67,13 @@ class SurfaceView<T, 1> : public detail::SurfaceView<T, 1> {
  public:
   using detail::SurfaceView<T, 1>::SurfaceView;
 
-  __device__ __forceinline__ T Read(int x, cudaSurfaceBoundaryMode mode = cudaSurfaceBoundaryMode::cudaBoundaryModeTrap) const {
+  __device__ __forceinline__ T Read(int x, cudaSurfaceBoundaryMode mode = cudaSurfaceBoundaryMode::cudaBoundaryModeTrap) const noexcept(false){
     #ifdef __CUDA_ARCH__
     return surf1Dread<T>(this->surface, sizeof(T) * x, mode);
     #endif
   }
 
-  __device__ __forceinline__ void Write(T data, int x, cudaSurfaceBoundaryMode mode = cudaSurfaceBoundaryMode::cudaBoundaryModeTrap) {
+  __device__ __forceinline__ void Write(T data, int x, cudaSurfaceBoundaryMode mode = cudaSurfaceBoundaryMode::cudaBoundaryModeTrap) noexcept(false) {
     #ifdef __CUDA_ARCH__
     surf1Dwrite<T>(data, this->surface, sizeof(T) * x, mode);
     #endif
@@ -85,7 +85,7 @@ class SurfaceView<const T, 2> : public detail::SurfaceView<const T, 2> {
  public:
   using detail::SurfaceView<const T, 2>::SurfaceView;
 
-  __device__ __forceinline__ T Read(int x, int y, cudaSurfaceBoundaryMode mode = cudaSurfaceBoundaryMode::cudaBoundaryModeTrap) const {
+  __device__ __forceinline__ T Read(int x, int y, cudaSurfaceBoundaryMode mode = cudaSurfaceBoundaryMode::cudaBoundaryModeTrap) const noexcept(false) {
     #ifdef __CUDA_ARCH__
     return surf2Dread<T>(this->surface, sizeof(T) * x, y, mode);
     #endif
@@ -97,13 +97,13 @@ class SurfaceView<T, 2> : public detail::SurfaceView<T, 2> {
  public:
   using detail::SurfaceView<T, 2>::SurfaceView;
 
-  __device__ __forceinline__ T Read(int x, int y, cudaSurfaceBoundaryMode mode = cudaSurfaceBoundaryMode::cudaBoundaryModeTrap) const {
+  __device__ __forceinline__ T Read(int x, int y, cudaSurfaceBoundaryMode mode = cudaSurfaceBoundaryMode::cudaBoundaryModeTrap) const noexcept(false) {
     #ifdef __CUDA_ARCH__
     return surf2Dread<T>(this->surface, sizeof(T) * x, y, mode);
     #endif
   }
 
-  __device__ __forceinline__ void Write(T data, int x, int y, cudaSurfaceBoundaryMode mode = cudaSurfaceBoundaryMode::cudaBoundaryModeTrap) {
+  __device__ __forceinline__ void Write(T data, int x, int y, cudaSurfaceBoundaryMode mode = cudaSurfaceBoundaryMode::cudaBoundaryModeTrap) noexcept(false) {
     #ifdef __CUDA_ARCH__
     surf2Dwrite<T>(data, this->surface, sizeof(T) * x, y, mode);
     #endif
@@ -115,7 +115,7 @@ class SurfaceView<const T, 3> : public detail::SurfaceView<const T, 3> {
  public:
   using detail::SurfaceView<const T, 3>::SurfaceView;
 
-  __device__ __forceinline__ T Read(int x, int y, int z, cudaSurfaceBoundaryMode mode = cudaSurfaceBoundaryMode::cudaBoundaryModeTrap) const {
+  __device__ __forceinline__ T Read(int x, int y, int z, cudaSurfaceBoundaryMode mode = cudaSurfaceBoundaryMode::cudaBoundaryModeTrap) const noexcept(false) {
     #ifdef __CUDA_ARCH__
     return surf3Dread<T>(this->surface, sizeof(T) * x, y, z, mode);
     #endif
@@ -127,13 +127,13 @@ class SurfaceView<T, 3> : public detail::SurfaceView<T, 3> {
  public:
   using detail::SurfaceView<T, 3>::SurfaceView;
 
-  __device__ __forceinline__ T Read(int x, int y, int z, cudaSurfaceBoundaryMode mode = cudaSurfaceBoundaryMode::cudaBoundaryModeTrap) const {
+  __device__ __forceinline__ T Read(int x, int y, int z, cudaSurfaceBoundaryMode mode = cudaSurfaceBoundaryMode::cudaBoundaryModeTrap) const noexcept(false) {
     #ifdef __CUDA_ARCH__
     return surf3Dread<T>(this->surface, sizeof(T) * x, y, z, mode);
     #endif
   }
 
-  __device__ __forceinline__ void Write(T data, int x, int y, int z, cudaSurfaceBoundaryMode mode = cudaSurfaceBoundaryMode::cudaBoundaryModeTrap) {
+  __device__ __forceinline__ void Write(T data, int x, int y, int z, cudaSurfaceBoundaryMode mode = cudaSurfaceBoundaryMode::cudaBoundaryModeTrap) noexcept(false) {
     #ifdef __CUDA_ARCH__
     surf1Dwrite<T>(data, this->surface, sizeof(T) * x, y, z, mode);
     #endif

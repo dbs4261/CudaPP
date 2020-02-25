@@ -115,7 +115,7 @@ struct MipmappedArray {
     this->Pyramid();
   }
 
-  void Set(const CudaArray<T>& other) {
+  void Set(const CudaArray<T>& other) noexcept(false) {
     assert(this->Size() == other.Size());
     cudaMemcpy3DParms params = Memcpy3DParamsDD(other.array, this->ArrayPtr(0), extent);
     cudaError_t ret = cudaMemcpy3D(&params);
@@ -125,7 +125,7 @@ struct MipmappedArray {
     this->Pyramid();
   }
 
-  void Set(const MipmappedArray<T>& other) {
+  void Set(const MipmappedArray<T>& other) noexcept(false) {
     assert(this->Size() == other.Size());
     assert(this->levels == other.levels);
     cudaMemcpy3DParms params = BlankMemcpy3DParams();
