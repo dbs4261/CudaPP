@@ -31,9 +31,12 @@ target_sources(cudapp INTERFACE
   ${CMAKE_CURRENT_LIST_DIR}/arrays/texture_view.h
   ${CMAKE_CURRENT_LIST_DIR}/exceptions/cuda_exception.h
   ${CMAKE_CURRENT_LIST_DIR}/functions/kernel_launchers.h
+  ${CMAKE_CURRENT_LIST_DIR}/mathematics/array.h
+  ${CMAKE_CURRENT_LIST_DIR}/mathematics/vector_types.h
+  ${CMAKE_CURRENT_LIST_DIR}/mathematics/vector_type_traits.h
+  ${CMAKE_CURRENT_LIST_DIR}/utilities/bit_manipulators.h
   ${CMAKE_CURRENT_LIST_DIR}/utilities/ide_helpers.h
   ${CMAKE_CURRENT_LIST_DIR}/utilities/memory_helpers.h
-  ${CMAKE_CURRENT_LIST_DIR}/vector_types/vector_type_traits.h
 )
 
 target_include_directories(cudapp

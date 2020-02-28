@@ -13,7 +13,7 @@
 #include <driver_types.h>
 #include <texture_indirect_functions.h>
 
-#include "vector_types/vector_type_traits.h"
+#include "mathematics/vector_type_traits.h"
 
 #include "mipmapped_array.h"
 #include "texture_view.h"

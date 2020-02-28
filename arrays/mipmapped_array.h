@@ -16,7 +16,7 @@
 #include <cuda.h>
 
 #include "utilities/memory_helpers.h"
-#include "vector_types/vector_type_traits.h"
+#include "mathematics/vector_type_traits.h"
 
 #include "cuda_array.h"
 
