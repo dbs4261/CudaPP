@@ -1,7 +1,36 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.15)
 project(CudaPP LANGUAGES CXX CUDA)
 
 set(ignoreMe "${CMAKE_C_COMPILER}")
+
+include(cmake/StandardProjectSettings.cmake)
+
+# Not sure if this works correctly, still have the sets further on. Gotta make it work with cuda.
+add_library(project_options INTERFACE)
+target_compile_features(project_options INTERFACE cxx_std_14)
+include(cmake/Sanitizers.cmake)
+enable_sanitizers(project_options)
+include(cmake/StaticAnalyzers.cmake)
+
+add_library(project_warnings INTERFACE)
+include(cmake/CompilerWarnings.cmake)
+set_project_warnings(project_warnings)
+
+include(cmake/Doxygen.cmake)
+enable_doxygen()
+
+option(BUILD_SHARED_LIBS "Enable compilation of shared libraries" OFF)
+option(ENABLE_TESTING "Enable Test Builds" ON)
+
+# Very basic PCH example
+option(ENABLE_PCH "Enable Precompiled Headers" OFF)
+if (ENABLE_PCH)
+  # This sets a global PCH parameter, each project will build its own PCH, which
+  # is a good idea if any #define's change
+  #
+  #
+  target_precompile_headers(project_options INTERFACE <vector> <string> <map> <utility>)
+endif()
 
 set(CMAKE_CXX_STANDARD 14)
 if(NOT DEFINED CMAKE_CUDA_STANDARD)
@@ -31,10 +60,7 @@ target_sources(cudapp INTERFACE
   ${CMAKE_CURRENT_LIST_DIR}/arrays/texture_view.h
   ${CMAKE_CURRENT_LIST_DIR}/exceptions/cuda_exception.h
   ${CMAKE_CURRENT_LIST_DIR}/functions/kernel_launchers.h
-  ${CMAKE_CURRENT_LIST_DIR}/mathematics/array.h
-  ${CMAKE_CURRENT_LIST_DIR}/mathematics/vector_types.h
   ${CMAKE_CURRENT_LIST_DIR}/mathematics/vector_type_traits.h
-  ${CMAKE_CURRENT_LIST_DIR}/utilities/bit_manipulators.h
   ${CMAKE_CURRENT_LIST_DIR}/utilities/ide_helpers.h
   ${CMAKE_CURRENT_LIST_DIR}/utilities/memory_helpers.h
 )
