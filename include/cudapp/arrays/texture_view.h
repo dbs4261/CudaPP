@@ -5,7 +5,7 @@
 #ifndef CUDAPP_TEXTURE_VIEW_H
 #define CUDAPP_TEXTURE_VIEW_H
 
-#include "utilities/ide_helpers.h"
+#include "include/cudapp/utilities/ide_helpers.h"
 
 #include <utility>
 

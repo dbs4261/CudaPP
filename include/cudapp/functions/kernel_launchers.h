@@ -5,7 +5,7 @@
 #ifndef CUDAPP_KERNEL_LAUNCHERS_H
 #define CUDAPP_KERNEL_LAUNCHERS_H
 
-#include "utilities/ide_helpers.h"
+#include "include/cudapp/utilities/ide_helpers.h"
 
 #include <array>
 #include <functional>

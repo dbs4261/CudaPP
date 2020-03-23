@@ -1,0 +1,6 @@
+add_subdirectory(allocators)
+add_subdirectory(arrays)
+add_subdirectory(exceptions)
+add_subdirectory(functions)
+add_subdirectory(mathematics)
+add_subdirectory(utilities)

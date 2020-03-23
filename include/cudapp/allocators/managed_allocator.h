@@ -5,12 +5,12 @@
 #ifndef CUDAPP_MANAGED_ALLOCATOR_H
 #define CUDAPP_MANAGED_ALLOCATOR_H
 
-#include "utilities/ide_helpers.h"
+#include "include/cudapp/utilities/ide_helpers.h"
 
 #include <new>
 #include <utility>
 
-#include "exceptions/cuda_exception.h"
+#include "include/cudapp/exceptions/cuda_exception.h"
 
 namespace cudapp {
 

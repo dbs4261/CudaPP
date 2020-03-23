@@ -5,16 +5,16 @@
 #ifndef CUDAPP_CUDA_ARRAY_H
 #define CUDAPP_CUDA_ARRAY_H
 
-#include "utilities/ide_helpers.h"
+#include "include/cudapp/utilities/ide_helpers.h"
 
 #include <cassert>
 #include <utility>
 
 #include <channel_descriptor.h>
 
-#include "exceptions/cuda_exception.h"
-#include "utilities/memory_helpers.h"
-#include "mathematics/vector_type_traits.h"
+#include "include/cudapp/exceptions/cuda_exception.h"
+#include "include/cudapp/utilities/memory_helpers.h"
+#include "include/cudapp/mathematics/vector_type_traits.h"
 
 namespace cudapp {
 

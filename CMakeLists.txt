@@ -47,23 +47,6 @@ endif()
 set(CUDA_COMPILED_ARCH "sm_75")
 
 add_library(cudapp INTERFACE)
-target_sources(cudapp INTERFACE
-  ${CMAKE_CURRENT_LIST_DIR}/allocators/device_allocator.h
-  ${CMAKE_CURRENT_LIST_DIR}/allocators/managed_allocator.h
-  ${CMAKE_CURRENT_LIST_DIR}/allocators/pinned_allocator.h
-  ${CMAKE_CURRENT_LIST_DIR}/arrays/cuda_array.h
-  ${CMAKE_CURRENT_LIST_DIR}/arrays/mipmapped_array.h
-  ${CMAKE_CURRENT_LIST_DIR}/arrays/mipmapped_texture_object.h
-  ${CMAKE_CURRENT_LIST_DIR}/arrays/surface_object.h
-  ${CMAKE_CURRENT_LIST_DIR}/arrays/surface_view.h
-  ${CMAKE_CURRENT_LIST_DIR}/arrays/texture_object.h
-  ${CMAKE_CURRENT_LIST_DIR}/arrays/texture_view.h
-  ${CMAKE_CURRENT_LIST_DIR}/exceptions/cuda_exception.h
-  ${CMAKE_CURRENT_LIST_DIR}/functions/kernel_launchers.h
-  ${CMAKE_CURRENT_LIST_DIR}/mathematics/vector_type_traits.h
-  ${CMAKE_CURRENT_LIST_DIR}/utilities/ide_helpers.h
-  ${CMAKE_CURRENT_LIST_DIR}/utilities/memory_helpers.h
-)
 
 target_include_directories(cudapp
   INTERFACE
@@ -86,5 +69,13 @@ target_link_libraries(cudapp
   INTERFACE
     ${CUDA_LIBRARIES}
 )
+
+if (ENABLE_TESTING)
+  message("Testing enabled...")
+  include(GoogleTest)
+  add_subdirectory(test)
+elseif()
+  message("Skipping tests...")
+endif()
 
 add_subdirectory(test_application)

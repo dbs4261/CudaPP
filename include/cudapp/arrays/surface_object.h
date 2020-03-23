@@ -5,7 +5,7 @@
 #ifndef CUDAPP_SURFACE_OBJECT_H
 #define CUDAPP_SURFACE_OBJECT_H
 
-#include "utilities/ide_helpers.h"
+#include "include/cudapp/utilities/ide_helpers.h"
 
 #include <cassert>
 #include <memory>
@@ -14,7 +14,7 @@
 #include <surface_indirect_functions.h>
 #include <driver_types.h>
 
-#include "utilities/memory_helpers.h"
+#include "include/cudapp/utilities/memory_helpers.h"
 
 #include "cuda_array.h"
 #include "surface_view.h"
@@ -91,20 +91,20 @@ class SurfaceObject {
     return resource_desc;
   }
 
-  cuda::SurfaceView<T, Dimensions> View() {
+  cudapp::SurfaceView<T, Dimensions> View() {
     if (surface == 0) {
       cudaResourceDesc desc = this->ResourceDescription();
       CudaCatchError(cudaCreateSurfaceObject(&this->surface, &desc));
     }
-    return cuda::SurfaceView<T, Dimensions>(surface);
+    return cudapp::SurfaceView<T, Dimensions>(surface);
   }
 
-  cuda::SurfaceView<std::add_const_t<T>, Dimensions> View() const {
+  cudapp::SurfaceView<std::add_const_t<T>, Dimensions> View() const {
     if (surface == 0) {
       cudaResourceDesc desc = this->ResourceDescription();
       CudaCatchError(cudaCreateSurfaceObject(&this->surface, &desc));
     }
-    return cuda::SurfaceView<std::add_const_t<T>, Dimensions>(surface);
+    return cudapp::SurfaceView<std::add_const_t<T>, Dimensions>(surface);
   }
 
   inline auto CView() const {
@@ -127,10 +127,10 @@ class SurfaceObject {
     this->array_ptr->Get(_data);
   }
 
-  friend cuda::TextureObject<T, Dimensions, true, true>;
-  friend cuda::TextureObject<T, Dimensions, true, false>;
-  friend cuda::TextureObject<T, Dimensions, false, true>;
-  friend cuda::TextureObject<T, Dimensions, false, false>;
+  friend cudapp::TextureObject<T, Dimensions, true, true>;
+  friend cudapp::TextureObject<T, Dimensions, true, false>;
+  friend cudapp::TextureObject<T, Dimensions, false, true>;
+  friend cudapp::TextureObject<T, Dimensions, false, false>;
 
  protected:
   std::shared_ptr<CudaArray<T>> array_ptr;

@@ -5,7 +5,7 @@
 #ifndef CUDAPP_MIPMAPPED_TEXTURE_OBJECT_H
 #define CUDAPP_MIPMAPPED_TEXTURE_OBJECT_H
 
-#include "utilities/ide_helpers.h"
+#include "include/cudapp/utilities/ide_helpers.h"
 
 #include <memory>
 #include <type_traits>
@@ -13,7 +13,7 @@
 #include <driver_types.h>
 #include <texture_indirect_functions.h>
 
-#include "mathematics/vector_type_traits.h"
+#include "include/cudapp/mathematics/vector_type_traits.h"
 
 #include "mipmapped_array.h"
 #include "texture_view.h"
