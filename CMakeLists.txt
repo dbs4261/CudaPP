@@ -3,6 +3,12 @@ project(CudaPP LANGUAGES CXX CUDA)
 
 set(ignoreMe "${CMAKE_C_COMPILER}")
 
+set(CMAKE_CXX_STANDARD 14)
+if(NOT DEFINED CMAKE_CUDA_STANDARD)
+  set(CMAKE_CUDA_STANDARD 14)
+  set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+endif()
+
 include(cmake/StandardProjectSettings.cmake)
 
 # Not sure if this works correctly, still have the sets further on. Gotta make it work with cuda.
@@ -32,12 +38,6 @@ if (ENABLE_PCH)
   target_precompile_headers(project_options INTERFACE <vector> <string> <map> <utility>)
 endif()
 
-set(CMAKE_CXX_STANDARD 14)
-if(NOT DEFINED CMAKE_CUDA_STANDARD)
-  set(CMAKE_CUDA_STANDARD 14)
-  set(CMAKE_CUDA_STANDARD_REQUIRED ON)
-endif()
-
 if(CMAKE_BUILD_TYPE MATCHES Debug)
   set(CUDA_NVCC_FLAGS -O0 -G -g --use_fast_math --ptxas-options=-v --compiler-options -Wall)
 else()
@@ -45,6 +45,9 @@ else()
 endif()
 
 set(CUDA_COMPILED_ARCH "sm_75")
+
+set(CMAKE_THREAD_PREFER_PTHREAD ON)
+find_package(Threads)
 
 add_library(cudapp INTERFACE)
 
@@ -71,11 +74,11 @@ target_link_libraries(cudapp
 )
 
 if (ENABLE_TESTING)
-  message("Testing enabled...")
+  message("-- Testing enabled...")
   include(GoogleTest)
   add_subdirectory(test)
 elseif()
-  message("Skipping tests...")
+  message("-- Skipping tests...")
 endif()
 
 add_subdirectory(test_application)

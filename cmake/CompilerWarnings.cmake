@@ -77,6 +77,15 @@ function(set_project_warnings project_name)
       -Wuseless-cast # warn if you perform a cast to the same type
   )
 
+
+  set(CUDA_WARNINGS -Wreorder)
+  if (WARNINGS_AS_ERRORS)
+      set(CUDA_WARNINGS
+          ${CUDA_WARNINGS}
+          --Werror cross-execution-space-call deprecated-declarations reorder
+      )
+  endif()
+
   if(MSVC)
     set(PROJECT_WARNINGS ${MSVC_WARNINGS})
   elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
@@ -85,6 +94,9 @@ function(set_project_warnings project_name)
     set(PROJECT_WARNINGS ${GCC_WARNINGS})
   endif()
 
-  target_compile_options(${project_name} INTERFACE ${PROJECT_WARNINGS})
+  target_compile_options(${project_name} INTERFACE
+      $<$<BUILD_INTERFACE:$<COMPILE_LANGUAGE:CXX>>:${PROJECT_WARNINGS}>
+      $<$<BUILD_INTERFACE:$<COMPILE_LANGUAGE:CUDA>>:${CUDA_WARNINGS}>
+  )
 
 endfunction()
