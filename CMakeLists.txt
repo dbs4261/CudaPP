@@ -63,6 +63,8 @@ target_include_directories(cudapp
 target_include_directories(cudapp
   INTERFACE
     ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include/>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/src/>
 )
 target_compile_options(cudapp
   INTERFACE

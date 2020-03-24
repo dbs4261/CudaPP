@@ -1,1 +1,2 @@
-package_add_test_with_libraries(test_device_allocator device_allocator.cpp cudapp PROJECT_DIR)
+package_add_test_with_libraries(test_device_allocator device_allocator.cu cudapp PROJECT_DIR)
+package_add_test_with_libraries(test_managed_allocator managed_allocator.cu cudapp PROJECT_DIR)

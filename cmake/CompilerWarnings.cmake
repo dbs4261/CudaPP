@@ -82,7 +82,7 @@ function(set_project_warnings project_name)
   if (WARNINGS_AS_ERRORS)
       set(CUDA_WARNINGS
           ${CUDA_WARNINGS}
-          --Werror cross-execution-space-call deprecated-declarations reorder
+          --Werror cross-execution-space-call
       )
   endif()
 

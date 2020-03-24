@@ -1,4 +1,4 @@
-add_subdirectory(allocators)
+add_subdirectory(memory)
 add_subdirectory(arrays)
 add_subdirectory(exceptions)
 add_subdirectory(functions)

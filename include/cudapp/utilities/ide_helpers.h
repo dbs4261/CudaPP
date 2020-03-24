@@ -21,24 +21,6 @@
 
 #include <cuda_runtime_api.h>
 
-#ifndef CROSS_PLATFORM_INLINE
-#ifdef __GNUC__
-#define CROSS_PLATFORM_INLINE __attribute__((always_inline))
-#endif //__GNUC__
-#ifdef __clang__
-#define CROSS_PLATFORM_INLINE __attribute__((always_inline))
-#endif //__clang__
-#ifdef _MSC_VER
-#define CROSS_PLATFORM_INLINE __forceinline
-#endif //_MSC_VER
-#ifdef __MINGW64__
-#define CROSS_PLATFORM_INLINE __attribute__((gnu_inline))
-#endif //__MINGW64_
-#ifdef __CUDACC__
-#define CROSS_PLATFORM_INLINE __forceinline__
-#endif //__CUDACC__
-#endif //CROSS_PLATFORM_INLINE
-
 void check(cudaError_t result, char const* const func, const char* const file, int const line) {
   if (result) {
     fprintf(stderr, "CUDA error at %s:%d code=%d(%s) \"%s\" \n",

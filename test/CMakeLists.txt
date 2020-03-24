@@ -6,6 +6,10 @@ macro(package_add_test_with_libraries TESTNAME FILES LIBRARIES TEST_WORKING_DIRE
 #            PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${TEST_WORKING_DIRECTORY}"
     )
     set_target_properties(${TESTNAME} PROPERTIES FOLDER tests)
+    set_target_properties(${TESTNAME} PROPERTIES
+        CUDA_SEPERABLE_COMPILATION ON
+        CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER}
+    )
 endmacro()
 
 add_subdirectory(cudapp)
