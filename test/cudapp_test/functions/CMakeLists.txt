@@ -1,0 +1,1 @@
+package_add_test_with_libraries(test_kernel_launchers kernel_launchers.cu cudapp PROJECT_DIR)

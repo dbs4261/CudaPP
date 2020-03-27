@@ -50,13 +50,10 @@ set(CMAKE_THREAD_PREFER_PTHREAD ON)
 find_package(Threads)
 
 add_library(cudapp INTERFACE)
+add_subdirectory(include)
+add_subdirectory(src)
 
-target_include_directories(cudapp
-  INTERFACE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/>
-    ${CUDA_INCLUDE_DIRS}
-)
-#set_target_properties(cudapp PROPERTIES
+#set_target_properties(cudapp_test PROPERTIES
 #  CUDA_SEPERABLE_COMPILATION ON
 #  CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER}
 #)

@@ -5,7 +5,7 @@
 #ifndef CUDAPP_MIPMAPPED_ARRAY_H
 #define CUDAPP_MIPMAPPED_ARRAY_H
 
-#include "include/cudapp/utilities/ide_helpers.h"
+#include "cudapp/utilities/ide_helpers.h"
 
 #include <cassert>
 #include <utility>
@@ -15,8 +15,8 @@
 #include <driver_types.h>
 #include <cuda.h>
 
-#include "include/cudapp/utilities/memory_helpers.h"
-#include "include/cudapp/mathematics/vector_type_traits.h"
+#include "cudapp/utilities/memory_helpers.h"
+#include "cudapp/mathematics/vector_type_traits.h"
 
 #include "cuda_array.h"
 

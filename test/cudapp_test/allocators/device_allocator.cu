@@ -10,7 +10,7 @@
 
 #include "cudapp/memory/allocators/device_allocator.h"
 
-#include "test/cudapp/testing_helpers.h"
+#include "cudapp_test/testing_helpers.h"
 
 template <typename T>
 __global__ void SaxpyKernel(T a, const T* x, const T* y, T* f, unsigned int n) {

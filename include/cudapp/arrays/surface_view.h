@@ -5,7 +5,7 @@
 #ifndef CUDAPP_SURFACE_VIEW_H
 #define CUDAPP_SURFACE_VIEW_H
 
-#include "include/cudapp/utilities/ide_helpers.h"
+#include "cudapp/utilities/ide_helpers.h"
 
 #include <type_traits>
 #include <utility>

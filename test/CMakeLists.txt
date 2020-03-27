@@ -10,6 +10,9 @@ macro(package_add_test_with_libraries TESTNAME FILES LIBRARIES TEST_WORKING_DIRE
         CUDA_SEPERABLE_COMPILATION ON
         CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER}
     )
+    target_include_directories(${TESTNAME} PRIVATE
+        ${CMAKE_SOURCE_DIR}/test/
+    )
 endmacro()
 
-add_subdirectory(cudapp)
+add_subdirectory(cudapp_test)
