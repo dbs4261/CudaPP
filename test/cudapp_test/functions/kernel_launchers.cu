@@ -14,7 +14,7 @@
 #include "cudapp_test/testing_helpers.h"
 
 template <typename A, typename B>
-__global__ void CopyValueKernel(A value, B* out, unsigned int n) {
+__global__ void CopyValueKernel(A value, B out, unsigned int n) {
   unsigned int idx = threadIdx.x + blockDim.x * blockIdx.x;
   if (idx < n) {
     out[n] = value;
@@ -22,8 +22,14 @@ __global__ void CopyValueKernel(A value, B* out, unsigned int n) {
 }
 
 using test_type = float;
-static constexpr int num = 32;
+static constexpr unsigned int num = 32;
 
 TEST(KernelLauncher, CopyValue) {
-  cudapp::ManagedAllocator<
+  std::vector<test_type, cudapp::ManagedAllocator<test_type>> out(num, test_type{0});
+  double val = 3.14;
+
+  dim3 grid;
+  dim3 block;
+  auto function = CopyValueKernel<test_type, test_type*>;
+  cudapp::LaunchFunction(grid, block, function, val, out.data(), out.size());
 }
