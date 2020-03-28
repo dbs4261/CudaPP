@@ -17,25 +17,6 @@ namespace cudapp {
 
 namespace detail {
 
-template <std::size_t N, std::size_t M, typename T>
-inline void PointerToVal(std::array<void*, M>& array, T&& val) {
-  static_assert(N == M - 1, "Error in array indexing");
-  array.at(N) = reinterpret_cast<void*>(std::addressof(val));
-}
-
-template <std::size_t N, std::size_t M, typename T, typename ... Args>
-inline void PointerToVal(std::array<void*, M>& array, T&& val, Args&& ... args) {
-  static_assert(N < M, "Array index out of bounds");
-  array.at(N) = PointerToVal<N + 1>(array, std::forward<Args>(args)...);
-}
-
-template <typename ... Args>
-std::array<void*, sizeof...(Args)> PointerArray(Args&& ... args) {
-  std::array<void*, sizeof...(Args)> array;
-  detail::PointerToVal<0>(array, std::forward<Args>(args)...);
-  return array;
-}
-
 template <typename T>
 using ReferenceWrapWhenNeeded = typename
     std::conditional<std::is_lvalue_reference<T>::value, std::reference_wrapper<T>, T>::type;
