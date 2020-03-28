@@ -17,16 +17,12 @@ namespace cudapp {
 
 namespace detail {
 
-template <typename T>
-using ReferenceWrapWhenNeeded = typename
-    std::conditional<std::is_lvalue_reference<T>::value, std::reference_wrapper<T>, T>::type;
+template<typename T> struct identity {using type = T;};
+template<typename T> using identity_t = typename identity<T>::type;
 
-template <typename ... FnArgs, typename ... PassedArgs, std::size_t ... Indices>
-void LaunchFunctionHelper(std::index_sequence<Indices...>, dim3 grid, dim3 block,
-    std::size_t shared_memory, cudaStream_t stream, void(*function)(FnArgs...), PassedArgs&& ... args) {
-  static_assert(sizeof...(FnArgs) == sizeof...(PassedArgs), "Incorrect number of arguments passed for kernel");
-  std::tuple<ReferenceWrapWhenNeeded<FnArgs>...> converted_arguments(std::forward<PassedArgs>(args)...);
-  std::array<void*, sizeof...(FnArgs)> args_array = {std::addressof(std::get<Indices>(converted_arguments))...};
+template <typename ... Args>
+void LaunchFunctionHelper(dim3 grid, dim3 block, std::size_t shared_memory, cudaStream_t stream, void(*function)(Args...), identity_t<Args> ... args) {
+  std::array<void*, sizeof...(Args)> args_array = {std::addressof(args)...};
   auto ret = cudaLaunchKernel(reinterpret_cast<const void*>(function), grid, block, args_array.data(), shared_memory, stream);
   if (ret != cudaSuccess) {
     throw cudapp::CudaException(ret);
@@ -37,26 +33,21 @@ void LaunchFunctionHelper(std::index_sequence<Indices...>, dim3 grid, dim3 block
   }
 }
 
-template <typename ... FnArgs, typename ... PassedArgs>
-void LaunchFunctionHelper(dim3 grid, dim3 block, std::size_t shared_memory, cudaStream_t stream, void(*function)(FnArgs...), PassedArgs&& ... args) {
-  LaunchFunctionHelper(std::make_index_sequence<sizeof...(FnArgs)>{}, grid, block, shared_memory, stream, function, std::forward<PassedArgs>(args)...);
 }
 
+template <typename ... Args>
+void LaunchFunction(dim3 grid, dim3 block, std::size_t shared_memory, cudaStream_t stream, void(*function)(Args...), detail::identity_t<Args>&& ... args) {
+  detail::LaunchFunctionHelper(grid, block, shared_memory, stream, function, std::forward<Args>(args)...);
 }
 
-template <typename ... FnArgs, typename ... PassedArgs>
-void LaunchFunction(dim3 grid, dim3 block, std::size_t shared_memory, cudaStream_t stream, void(*function)(FnArgs...), PassedArgs&& ... args) {
-  detail::LaunchFunctionHelper(grid, block, shared_memory, stream, function, std::forward<PassedArgs>(args)...);
+template <typename ... Args>
+void LaunchFunction(dim3 grid, dim3 block, std::size_t shared_memory, void(*function)(Args...), detail::identity_t<Args>&& ... args) {
+  detail::LaunchFunctionHelper(grid, block, shared_memory, cudaStream_t{0}, function, std::forward<Args>(args)...);
 }
 
-template <typename ... FnArgs, typename ... PassedArgs>
-void LaunchFunction(dim3 grid, dim3 block, std::size_t shared_memory, void(*function)(FnArgs...), PassedArgs&& ... args) {
-  detail::LaunchFunctionHelper(grid, block, shared_memory, cudaStream_t{0}, function, std::forward<PassedArgs>(args)...);
-}
-
-template <typename ... FnArgs, typename ... PassedArgs>
-void LaunchFunction(dim3 grid, dim3 block, void(*function)(FnArgs...), PassedArgs&& ... args) {
-  detail::LaunchFunctionHelper(grid, block, std::size_t{0}, cudaStream_t{0}, function, std::forward<PassedArgs>(args)...);
+template <typename ... Args>
+void LaunchFunction(dim3 grid, dim3 block, void(*function)(Args...), detail::identity_t<Args>&& ... args) {
+  detail::LaunchFunctionHelper(grid, block, std::size_t{0}, cudaStream_t{0}, function, std::forward<Args>(args)...);
 }
 
 }
