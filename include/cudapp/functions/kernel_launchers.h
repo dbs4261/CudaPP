@@ -12,6 +12,7 @@
 #include <cassert>
 #include <functional>
 #include <tuple>
+#include <unordered_map>
 #include <vector>
 
 #include "cudapp/exceptions/cuda_exception.h"
@@ -107,33 +108,35 @@ class MultiDeviceCoorperativeLauncher {
       void(*_function)(Args...), CooperativeMultiDeviceFlags _flags=CooperativeMultiDeviceFlags::BothSync) :
       grid(_grid), block(_block), shared_memory(_shared_memory), function(_function), flags(_flags), arguments() {}
 
-  [[nodiscard]] auto SimultaneousStreams() const {
+  [[nodiscard]] auto CooperativeStreams() const {
     return arguments.size();
   }
 
+  /**
+   * @brief Attempts to add a new kernel launch to the launch list.
+   * @param stream The stream to launch the processing on.
+   * @param args The arguments passed to the kernel
+   * @return A reference to this so that Construct().AddStream().AddStream().LaunchKernels();
+   */
   MultiDeviceCoorperativeLauncher& AddStream(cudaStream_t stream, Args ... args) {
-    arguments.emplace_back(stream, std::addressof(args)...);
+    // TODO: Replace with try emplace in c++17
+    if (arguments.find(stream) == arguments.end()) {
+      arguments.emplace(stream, std::addressof(args)...);
+    }
     return *this;
   }
 
   [[nodiscard]] std::array<void*, sizeof...(Args)>& StreamArgumentPointers(cudaStream_t stream) {
-    for (auto it = arguments.begin(); it != arguments.end(); ++it) {
-      if (it->first == stream) {
-        return it->second;
-      }
-    }
-    throw std::out_of_range("This function does not have arguments to launch on the given stream");
+    return arguments.at(stream);
   }
 
   [[nodiscard]] const std::array<void*, sizeof...(Args)>& StreamArgumentPointers(cudaStream_t stream) const {
-    for (auto it = arguments.begin(); it != arguments.end(); ++it) {
-      if (it->first == stream) {
-        return it->second;
-      }
-    }
-    throw std::out_of_range("This function does not have arguments to launch on the given stream");
+    return arguments.at(stream);
   }
 
+  /**
+   * @brief Launches the given kernel with the arguments and streams given.
+   */
   void LaunchKernels() const {
     assert(arguments.size() > 0);
     std::vector<cudaLaunchParams> params(arguments.size());
@@ -159,7 +162,7 @@ class MultiDeviceCoorperativeLauncher {
   std::size_t shared_memory;
   CooperativeMultiDeviceFlags flags;
   void(*function)(Args...);
-  std::vector<std::pair<cudaStream_t, std::array<void*, sizeof...(Args)>>> arguments;
+  std::unordered_map<cudaStream_t, std::array<void*, sizeof...(Args)>> arguments;
 };
 
 }
