@@ -78,11 +78,11 @@ function(set_project_warnings project_name)
   )
 
 
-  set(CUDA_WARNINGS -Wreorder --compiler-options -Wall
-    --ptxas-options=-Werror,-warn-double-usage,-warn-lmem-usage,-warn-spills)
+  set(CUDA_WARNINGS -Wreorder --ptxas-options=-Werror)
   if (WARNINGS_AS_ERRORS)
       set(CUDA_WARNINGS
           ${CUDA_WARNINGS}
+          --compiler-options -Wall
           --Werror cross-execution-space-call
       )
   endif()

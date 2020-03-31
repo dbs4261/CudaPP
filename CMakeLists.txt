@@ -21,12 +21,11 @@ include(cmake/StaticAnalyzers.cmake)
 target_compile_options(project_options INTERFACE
   $<$<COMPILE_LANGUAGE:CUDA>:--use_fast_math>
   $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>
-  $<$<COMPILE_LANGUAGE:CUDA>:--extended-lambda>
+  $<$<COMPILE_LANGUAGE:CUDA>:--expt-extended-lambda>
   $<$<CONFIG:Debug>:$<$<COMPILE_LANGUAGE:CUDA>:-g>>
   $<$<CONFIG:Debug>:$<$<COMPILE_LANGUAGE:CUDA>:-G>>
   $<$<CONFIG:Debug>:$<$<COMPILE_LANGUAGE:CUDA>:-O0>>
-  $<$<CONFIG:Debug>:$<$<COMPILE_LANGUAGE:CUDA>:-lineinfo>>
-  $<$<CONFIG:Debug>:$<$<COMPILE_LANGUAGE:CUDA>:-ptxas-options=-v>>
+  $<$<CONFIG:Debug>:$<$<COMPILE_LANGUAGE:CUDA>:--ptxas-options=-v>>
   $<$<CONFIG:Release>:$<$<COMPILE_LANGUAGE:CUDA>:-O3>>
 )
 
