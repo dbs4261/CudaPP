@@ -1,5 +1,5 @@
 //
-// Created by developer on 3/23/20.
+// Created by Daniel Simon on 3/23/20.
 //
 
 #ifndef CUDAPP_TESTING_HELPERS_H

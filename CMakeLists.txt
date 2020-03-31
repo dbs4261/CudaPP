@@ -18,6 +18,18 @@ include(cmake/Sanitizers.cmake)
 enable_sanitizers(project_options)
 include(cmake/StaticAnalyzers.cmake)
 
+target_compile_options(project_options INTERFACE
+  $<$<COMPILE_LANGUAGE:CUDA>:--use_fast_math>
+  $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>
+  $<$<COMPILE_LANGUAGE:CUDA>:--extended-lambda>
+  $<$<CONFIG:Debug>:$<$<COMPILE_LANGUAGE:CUDA>:-g>>
+  $<$<CONFIG:Debug>:$<$<COMPILE_LANGUAGE:CUDA>:-G>>
+  $<$<CONFIG:Debug>:$<$<COMPILE_LANGUAGE:CUDA>:-O0>>
+  $<$<CONFIG:Debug>:$<$<COMPILE_LANGUAGE:CUDA>:-lineinfo>>
+  $<$<CONFIG:Debug>:$<$<COMPILE_LANGUAGE:CUDA>:-ptxas-options=-v>>
+  $<$<CONFIG:Release>:$<$<COMPILE_LANGUAGE:CUDA>:-O3>>
+)
+
 add_library(project_warnings INTERFACE)
 include(cmake/CompilerWarnings.cmake)
 set_project_warnings(project_warnings)
@@ -36,12 +48,6 @@ if (ENABLE_PCH)
   #
   #
   target_precompile_headers(project_options INTERFACE <vector> <string> <map> <utility>)
-endif()
-
-if(CMAKE_BUILD_TYPE MATCHES Debug)
-  set(CUDA_NVCC_FLAGS -O0 -G -g --use_fast_math --ptxas-options=-v --compiler-options -Wall)
-else()
-  set(CUDA_NVCC_FLAGS -O3 --use_fast_math --ptxas-options=-v --compiler-options -Wall)
 endif()
 
 set(CUDA_COMPILED_ARCH "sm_75")
