@@ -217,7 +217,7 @@ class MultiDeviceCoorperativeLauncher {
    */
   explicit MultiDeviceCoorperativeLauncher(dim3 _grid, dim3 _block, std::size_t _shared_memory,
       void(*_function)(Args...), CooperativeMultiDeviceFlags _flags=CooperativeMultiDeviceFlags::BothSync) :
-      grid(_grid), block(_block), shared_memory(_shared_memory), function(_function), flags(_flags), arguments() {}
+      grid(_grid), block(_block), shared_memory(_shared_memory), flags(_flags), function(_function), arguments() {}
 
   /**
    * @brief Gets the number of streams with arguments set to be launched.

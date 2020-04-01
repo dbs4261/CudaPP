@@ -1,5 +1,5 @@
 //
-// Created by developer on 3/23/20.
+// Created by Daniel Simon on 3/23/20.
 //
 
 #include "cudapp/utilities/ide_helpers.h"
@@ -47,7 +47,7 @@ TEST(DeviceAllocator, SaxpyRaw) {
 
   dim3 block_size = dim3{32u, 1u, 1u};
   assert(num > 0);
-  dim3 grid_size((num - 1) / block_size.x + 1, 1u, 1u);
+  dim3 grid_size((num - 1u) / block_size.x + 1u, 1u, 1u);
   SaxpyKernel<<<grid_size, block_size>>>(a, device_x, device_y, device_f, num);
   EXPECT_EQ(cudaDeviceSynchronize(), cudaSuccess);
   cudapp::DeviceAllocator<float>().deallocate(device_x, num);

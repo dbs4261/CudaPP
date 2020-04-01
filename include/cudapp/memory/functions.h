@@ -1,5 +1,5 @@
 //
-// Created by developer on 3/24/20.
+// Created by Daniel Simon on 3/24/20.
 //
 
 #ifndef CUDAPP_FUNCTIONS_H

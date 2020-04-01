@@ -1,5 +1,5 @@
 //
-// Created by developer on 3/24/20.
+// Created by Daniel Simon on 3/24/20.
 //
 
 #include "cudapp/utilities/ide_helpers.h"
@@ -31,5 +31,5 @@ TEST(KernelLauncher, CopyValue) {
   dim3 grid;
   dim3 block;
   auto function = CopyValueKernel<test_type, test_type*>;
-  cudapp::LaunchFunction(grid, block, function, val, out.data(), out.size());
+  cudapp::LaunchKernel(grid, block, function, val, out.data(), out.size());
 }
