@@ -1,4 +1,6 @@
 target_sources(cudapp INTERFACE
-    ide_helpers.h
-    memory_helpers.h
+  capture_wrapper.h
+  ide_helpers.h
+  memory_helpers.h
+  type_helpers.h
 )

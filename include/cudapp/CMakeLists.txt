@@ -1,6 +1,7 @@
-add_subdirectory(memory)
 add_subdirectory(arrays)
 add_subdirectory(exceptions)
 add_subdirectory(functions)
+add_subdirectory(managment)
 add_subdirectory(mathematics)
+add_subdirectory(memory)
 add_subdirectory(utilities)
