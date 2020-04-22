@@ -39,6 +39,7 @@ enable_doxygen()
 
 option(BUILD_SHARED_LIBS "Enable compilation of shared libraries" OFF)
 option(ENABLE_TESTING "Enable Test Builds" ON)
+option(SYNCHRONIZE_STREAMS_PER_THREAD "Toggles default stream synchronization behavior. ON->per-thread OFF->legacy" ON)
 
 # Very basic PCH example
 option(ENABLE_PCH "Enable Precompiled Headers" OFF)
@@ -77,6 +78,22 @@ target_link_libraries(cudapp
   INTERFACE
     ${CUDA_LIBRARIES}
 )
+
+if (SYNCHRONIZE_STREAMS_PER_THREAD)
+  target_compile_options(cudapp
+    INTERFACE
+      $<$<COMPILE_LANGUAGE:CUDA>:--default-stream per-thread>
+  )
+  target_compile_definitions(cudapp
+    INTERFACE
+      CUDA_API_PER_THREAD_DEFAULT_STREAM
+  )
+else()
+  target_compile_options(cudapp
+    INTERFACE
+      $<$<COMPILE_LANGUAGE:CUDA>:--default-stream legacy>
+  )
+endif()
 
 if (ENABLE_TESTING)
   message("-- Testing enabled...")
