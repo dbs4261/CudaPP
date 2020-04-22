@@ -18,7 +18,6 @@ class CudaException : public std::exception {
   /**
    * @brief A wrapper that will read out a cuda error when captured.
    * @param _error The cuda error encountered.
-   * If the string stuff throws an error 🤷
    */
   explicit CudaException(cudaError_t _error) noexcept : error(_error) {
     std::stringstream ss;

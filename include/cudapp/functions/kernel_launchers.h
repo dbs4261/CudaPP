@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "cudapp/exceptions/cuda_exception.h"
+#include "cudapp/utilities/type_helpers.h"
 
 namespace cudapp {
 
@@ -36,13 +37,6 @@ enum struct CooperativeMultiDeviceFlags : unsigned int {
 }
 
 namespace detail {
-
-/**
- * @brief A helper to prevent the function arguments being used for template argument deduction instead of the function.
- * @tparam T The type.
- */
-template<typename T> struct identity {using type = T;};
-template<typename T> using identity_t = typename identity<T>::type;
 
 /**
  * @brief Does the actual work of launching a kernel.
@@ -91,21 +85,18 @@ void LaunchCooperativeKernelHelper(dim3 grid, dim3 block, std::size_t shared_mem
 }
 
 /**
- * @brief A pair consisting of a function and an array of pointers to the data that it is called with.
- */
-template <typename ... Args>
-using HostFunctionnData = std::pair<void(*)(Args...), std::array<void*, sizeof...(Args)>>;
-
-/**
- * @brief A wrapper around a function to be launched from cudaLaunchHostFunc to allow more arguments to be passed.
- * @tparam Args The type of the arguments to be passed to the packed function.
- * @param user_data The wrapped function along with the calling parameters.
+ * @breif Takes a bundled function/arguments payload, exceutes it and then cleans it up.
+ * @tparam Args The type of the arguments to be passed to the kernel.
+ * @param The payload used to call the function: pair(function, tuple(arguments)).
+ * @note This cleans up the payload created when launching the host function.
  */
 template <typename ... Args>
 void HostFunctionWrapper(void* user_data) {
-  // TODO(Daniel.Simon): check if the passing of the pointer array causes issues with object lifetime. It may be necessary to forward as tuple.
-  auto* actual_data = reinterpret_cast<HostFunctionnData<Args...>*>(user_data);
-  actual_data->first(*reinterpret_cast<std::add_pointer_t<Args>>(actual_data->second)...);
+  using function_t = void(*)(Args...);
+  using data_t = std::tuple<Args...>;
+  std::pair<function_t, data_t>* pair = reinterpret_cast<std::pair<function_t, data_t>>(user_data);
+  pair->first(std::get<Args>(pair->second)...);
+  delete pair;
 }
 
 }
@@ -123,7 +114,7 @@ void HostFunctionWrapper(void* user_data) {
  * @param args The arguments to pass to the kernel.
  */
 template <typename ... Args>
-void LaunchKernel(dim3 grid, dim3 block, std::size_t shared_memory, cudaStream_t stream, void(*function)(Args...), detail::identity_t<Args>&& ... args) {
+void LaunchKernel(dim3 grid, dim3 block, std::size_t shared_memory, cudaStream_t stream, void(*function)(Args...), identity_t<Args>&& ... args) {
   detail::LaunchKernelHelper(grid, block, shared_memory, stream, function, std::forward<Args>(args)...);
 }
 
@@ -137,7 +128,7 @@ void LaunchKernel(dim3 grid, dim3 block, std::size_t shared_memory, cudaStream_t
  * @param args The arguments to pass to the kernel.
  */
 template <typename ... Args>
-void LaunchKernel(dim3 grid, dim3 block, std::size_t shared_memory, void(*function)(Args...), detail::identity_t<Args>&& ... args) {
+void LaunchKernel(dim3 grid, dim3 block, std::size_t shared_memory, void(*function)(Args...), identity_t<Args>&& ... args) {
   detail::LaunchKernelHelper(grid, block, shared_memory, cudaStream_t{0}, function, std::forward<Args>(args)...);
 }
 
@@ -150,7 +141,7 @@ void LaunchKernel(dim3 grid, dim3 block, std::size_t shared_memory, void(*functi
  * @param args The arguments to pass to the kernel.
  */
 template <typename ... Args>
-void LaunchKernel(dim3 grid, dim3 block, void(*function)(Args...), detail::identity_t<Args>&& ... args) {
+void LaunchKernel(dim3 grid, dim3 block, void(*function)(Args...), identity_t<Args>&& ... args) {
   detail::LaunchKernelHelper(grid, block, std::size_t{0}, cudaStream_t{0}, function, std::forward<Args>(args)...);
 }
 //</editor-fold>
@@ -168,7 +159,7 @@ void LaunchKernel(dim3 grid, dim3 block, void(*function)(Args...), detail::ident
  * @param args The arguments to pass to the kernel.
  */
 template <typename ... Args>
-void LaunchCooperativeKernel(dim3 grid, dim3 block, std::size_t shared_memory, cudaStream_t stream, void(*function)(Args...), detail::identity_t<Args>&& ... args) {
+void LaunchCooperativeKernel(dim3 grid, dim3 block, std::size_t shared_memory, cudaStream_t stream, void(*function)(Args...), identity_t<Args>&& ... args) {
   detail::LaunchCooperativeKernelHelper(grid, block, shared_memory, stream, function, std::forward<Args>(args)...);
 }
 
@@ -182,7 +173,7 @@ void LaunchCooperativeKernel(dim3 grid, dim3 block, std::size_t shared_memory, c
  * @param args The arguments to pass to the kernel.
  */
 template <typename ... Args>
-void LaunchCooperativeKernel(dim3 grid, dim3 block, std::size_t shared_memory, void(*function)(Args...), detail::identity_t<Args>&& ... args) {
+void LaunchCooperativeKernel(dim3 grid, dim3 block, std::size_t shared_memory, void(*function)(Args...), identity_t<Args>&& ... args) {
   detail::LaunchCooperativeKernelHelper(grid, block, shared_memory, cudaStream_t{0}, function, std::forward<Args>(args)...);
 }
 
@@ -195,7 +186,7 @@ void LaunchCooperativeKernel(dim3 grid, dim3 block, std::size_t shared_memory, v
  * @param args The arguments to pass to the kernel.
  */
 template <typename ... Args>
-void LaunchCooperativeKernel(dim3 grid, dim3 block, void(*function)(Args...), detail::identity_t<Args>&& ... args) {
+void LaunchCooperativeKernel(dim3 grid, dim3 block, void(*function)(Args...), identity_t<Args>&& ... args) {
   detail::LaunchCooperativeKernelHelper(grid, block, std::size_t{0}, cudaStream_t{0}, function, std::forward<Args>(args)...);
 }
 //</editor-fold>
@@ -298,14 +289,11 @@ class MultiDeviceCoorperativeLauncher {
  * @param args The arguments needed to launch the host function.
  */
 template <typename ... Args>
-void LaunchHostFunction(cudaStream_t stream, void(*function)(Args...), detail::identity_t<Args> ... args) {
-  std::array<void*, sizeof...(Args)> args_array = {std::addressof(args)...};
-  detail::HostFunctionnData<Args...> user_data(function, args_array.data());
-  cudaError_t ret = cudaLaunchHostFunc(stream, detail::HostFunctionWrapper<Args...>, user_data);
-  if (ret != cudaSuccess) {
-    throw CudaException(ret);
-  }
-  ret = cudaGetLastError();
+void LaunchHostFunction(cudaStream_t stream, void(*function)(Args...), identity_t<Args>&& ... args) {
+  using data_t = std::tuple<Args...>;
+  using payload_t = std::pair<decltype(function), data_t>;
+  void* user_data = new payload_t(function, data_t(capture(args)...));
+  cudaError_t ret = cudaStreamAddCallback(stream, detail::HostFunctionWrapper<Args...>, user_data);
   if (ret != cudaSuccess) {
     throw CudaException(ret);
   }
