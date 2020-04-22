@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "cudapp/exceptions/cuda_exception.h"
+#include "cudapp/managment/stream_managment.h"
 #include "cudapp/utilities/type_helpers.h"
 
 namespace cudapp {
@@ -114,7 +115,8 @@ void HostFunctionWrapper(void* user_data) {
  * @param args The arguments to pass to the kernel.
  */
 template <typename ... Args>
-void LaunchKernel(dim3 grid, dim3 block, std::size_t shared_memory, cudaStream_t stream, void(*function)(Args...), identity_t<Args>&& ... args) {
+void LaunchKernel(dim3 grid, dim3 block, std::size_t shared_memory, Stream& stream, void(*function)(Args...), identity_t<Args>&& ... args) {
+  auto pushpop = detail::MakeScopeBasedDevicePushPop(stream.getDevice());
   detail::LaunchKernelHelper(grid, block, shared_memory, stream, function, std::forward<Args>(args)...);
 }
 
@@ -129,7 +131,7 @@ void LaunchKernel(dim3 grid, dim3 block, std::size_t shared_memory, cudaStream_t
  */
 template <typename ... Args>
 void LaunchKernel(dim3 grid, dim3 block, std::size_t shared_memory, void(*function)(Args...), identity_t<Args>&& ... args) {
-  detail::LaunchKernelHelper(grid, block, shared_memory, cudaStream_t{0}, function, std::forward<Args>(args)...);
+  detail::LaunchKernelHelper(grid, block, shared_memory, DefaultStream(), function, std::forward<Args>(args)...);
 }
 
 /**
@@ -142,7 +144,7 @@ void LaunchKernel(dim3 grid, dim3 block, std::size_t shared_memory, void(*functi
  */
 template <typename ... Args>
 void LaunchKernel(dim3 grid, dim3 block, void(*function)(Args...), identity_t<Args>&& ... args) {
-  detail::LaunchKernelHelper(grid, block, std::size_t{0}, cudaStream_t{0}, function, std::forward<Args>(args)...);
+  detail::LaunchKernelHelper(grid, block, std::size_t{0}, DefaultStream(), function, std::forward<Args>(args)...);
 }
 //</editor-fold>
 
@@ -159,7 +161,8 @@ void LaunchKernel(dim3 grid, dim3 block, void(*function)(Args...), identity_t<Ar
  * @param args The arguments to pass to the kernel.
  */
 template <typename ... Args>
-void LaunchCooperativeKernel(dim3 grid, dim3 block, std::size_t shared_memory, cudaStream_t stream, void(*function)(Args...), identity_t<Args>&& ... args) {
+void LaunchCooperativeKernel(dim3 grid, dim3 block, std::size_t shared_memory, Stream& stream, void(*function)(Args...), identity_t<Args>&& ... args) {
+  auto pushpop = detail::MakeScopeBasedDevicePushPop(stream.getDevice());
   detail::LaunchCooperativeKernelHelper(grid, block, shared_memory, stream, function, std::forward<Args>(args)...);
 }
 
@@ -174,7 +177,7 @@ void LaunchCooperativeKernel(dim3 grid, dim3 block, std::size_t shared_memory, c
  */
 template <typename ... Args>
 void LaunchCooperativeKernel(dim3 grid, dim3 block, std::size_t shared_memory, void(*function)(Args...), identity_t<Args>&& ... args) {
-  detail::LaunchCooperativeKernelHelper(grid, block, shared_memory, cudaStream_t{0}, function, std::forward<Args>(args)...);
+  detail::LaunchCooperativeKernelHelper(grid, block, shared_memory, DefaultStream(), function, std::forward<Args>(args)...);
 }
 
 /**
@@ -187,7 +190,7 @@ void LaunchCooperativeKernel(dim3 grid, dim3 block, std::size_t shared_memory, v
  */
 template <typename ... Args>
 void LaunchCooperativeKernel(dim3 grid, dim3 block, void(*function)(Args...), identity_t<Args>&& ... args) {
-  detail::LaunchCooperativeKernelHelper(grid, block, std::size_t{0}, cudaStream_t{0}, function, std::forward<Args>(args)...);
+  detail::LaunchCooperativeKernelHelper(grid, block, std::size_t{0}, DefaultStream(), function, std::forward<Args>(args)...);
 }
 //</editor-fold>
 
@@ -224,7 +227,7 @@ class MultiDeviceCoorperativeLauncher {
    * @param args The arguments passed to the kernel
    * @return A reference to this so that Construct().AddStream().AddStream().LaunchKernels();
    */
-  MultiDeviceCoorperativeLauncher& AddStream(cudaStream_t stream, Args ... args) {
+  MultiDeviceCoorperativeLauncher& AddStream(Stream& stream, Args ... args) {
     // TODO: Replace with try emplace in c++17
     if (arguments.find(stream) == arguments.end()) {
       arguments.emplace(stream, std::addressof(args)...);
@@ -237,7 +240,7 @@ class MultiDeviceCoorperativeLauncher {
    * @param stream The stream the arguments are associated with.
    * @return A modifiable array of pointers to the arguments.
    */
-  [[nodiscard]] std::array<void*, sizeof...(Args)>& StreamArgumentPointers(cudaStream_t stream) {
+  [[nodiscard]] std::array<void*, sizeof...(Args)>& StreamArgumentPointers(Stream& stream) {
     return arguments.at(stream);
   }
 
@@ -246,7 +249,7 @@ class MultiDeviceCoorperativeLauncher {
    * @param stream The stream the arguments are associated with.
    * @return A constant array of pointers to the arguments.
    */
-  [[nodiscard]] const std::array<void*, sizeof...(Args)>& StreamArgumentPointers(cudaStream_t stream) const {
+  [[nodiscard]] const std::array<void*, sizeof...(Args)>& StreamArgumentPointers(Stream& stream) const {
     return arguments.at(stream);
   }
 
@@ -289,7 +292,8 @@ class MultiDeviceCoorperativeLauncher {
  * @param args The arguments needed to launch the host function.
  */
 template <typename ... Args>
-void LaunchHostFunction(cudaStream_t stream, void(*function)(Args...), identity_t<Args>&& ... args) {
+void LaunchHostFunction(Stream& stream, void(*function)(Args...), identity_t<Args>&& ... args) {
+  auto pushpop = detail::MakeScopeBasedDevicePushPop(stream.getDevice());
   using data_t = std::tuple<Args...>;
   using payload_t = std::pair<decltype(function), data_t>;
   void* user_data = new payload_t(function, data_t(capture(args)...));

@@ -68,6 +68,10 @@ class Stream {
     }
   }
 
+  operator cudaStream_t() noexcept {
+    return this->stream;
+  }
+
   [[nodiscard]] const Device& getDevice() const noexcept {
     return device;
   }
