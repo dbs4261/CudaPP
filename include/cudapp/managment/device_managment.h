@@ -74,8 +74,12 @@ class Device {
   }
 
   friend Devices;
-  friend bool operator==(const Device& a, const Device& b);
-  friend bool operator!=(const Device& a, const Device& b);
+  friend bool operator==(const Device& a, const Device& b) noexcept {
+    return a.id == b.id;
+  }
+  friend bool operator!=(const Device& a, const Device& b) {
+    return not (a == b);
+  }
 
  protected:
   explicit Device(int _id) noexcept(false)
@@ -102,13 +106,6 @@ class Device {
   int lowest_stream_priority;
   int highest_stream_priority;
 };
-
-bool operator==(const Device& a, const Device& b) {
-  return a.id == b.id;
-}
-bool operator!=(const Device& a, const Device& b) {
-  return not (a == b);
-}
 
 // Singleton
 class Devices {
@@ -241,11 +238,11 @@ struct ScopeBasedDevicePushPop {
   ScopeBasedDevicePushPop(const ScopeBasedDevicePushPop&) = delete;
   ScopeBasedDevicePushPop& operator=(const ScopeBasedDevicePushPop&) = delete;
 
-  ScopeBasedDevicePushPop(ScopeBasedDevicePushPop&& other) {
+  ScopeBasedDevicePushPop(ScopeBasedDevicePushPop&& other) noexcept {
     this->previous = other.previous;
     other.previous = -1;
   }
-  ScopeBasedDevicePushPop& operator=(ScopeBasedDevicePushPop&& other) {
+  ScopeBasedDevicePushPop& operator=(ScopeBasedDevicePushPop&& other) noexcept {
     this->previous = other.previous;
     other.previous = -1;
   }

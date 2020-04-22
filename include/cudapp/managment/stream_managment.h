@@ -14,6 +14,8 @@
 
 namespace cudapp {
 
+class Stream;
+
 namespace detail {
 
 template <typename ... Args>
@@ -25,11 +27,12 @@ void CallbackForwarder(cudaStream_t stream, cudaError_t error, void* user_data) 
   delete pair;
 }
 
+std::vector<Stream> GenerateDefaultStreams() noexcept;
+
 }
 
 class Stream {
  public:
-  Stream() noexcept(false) : Stream(CurrentCudaDevice()) {}
   explicit Stream(const Device& _device) noexcept(false) : Stream(device, false) {}
   explicit Stream(const Device& _device, bool non_blocking) noexcept(false) : Stream(device, 0, non_blocking) {}
   explicit Stream(const Device& _device, int priority, bool non_blocking) noexcept(false) : stream(nullptr), device(_device) {
@@ -55,13 +58,13 @@ class Stream {
     std::swap(this->stream, other.stream);
   }
 
-  ~Stream() {
-    cudaError_t ret = cudaStreamDestroy(this->stream);
-    if (ret != cudaSuccess) {
-      #pragma clang diagnostic push
-      #pragma clang diagnostic ignored "-Wexceptions"
-      throw CudaException(ret);
-      #pragma clang diagnostic pop
+  ~Stream() noexcept(false) {
+    // Cant destroy default streams so just move on
+    if (not (this->stream == nullptr or this->stream == cudaStreamLegacy or this->stream == cudaStreamPerThread)) {
+      cudaError_t ret = cudaStreamDestroy(this->stream);
+      if (ret != cudaSuccess) {
+        throw CudaException(ret);
+      }
     }
   }
 
@@ -121,10 +124,57 @@ class Stream {
   // TODO(Dan.Simon): AttachMemAsync
   // TODO(Dan.Simon): WaitEvent
 
+  friend std::vector<Stream> detail::GenerateDefaultStreams() noexcept;
+  friend bool operator==(const Stream& a, const Stream& b) noexcept {
+    return a.device == b.device and a.stream == b.stream;
+  }
+  friend bool operator!=(const Stream& a, const Stream& b) noexcept {
+    return not (a == b);
+  }
+
  protected:
+  explicit Stream(const Device& _device, cudaStream_t _stream) noexcept : stream(_stream), device(_device) {}
+
   cudaStream_t stream;
   const Device& device;
 };
+
+[[nodiscard]] std::vector<Stream> detail::GenerateDefaultStreams() noexcept {
+  auto& devices = CudaDevices();
+  std::vector<Stream> streams; streams.reserve(devices.size());
+  std::transform(devices.begin(), devices.end(), std::back_inserter(streams),
+      [](const Device& device)->Stream{
+    // TODO(Dan.Simon): check if these streams are the proper way of generating default streams.
+    #ifdef CUDA_API_PER_THREAD_DEFAULT_STREAM
+    return Stream(device, cudaStreamPerThread);
+    #else
+    return Stream(device, cudaStreamLegacy);
+    #endif
+  });
+  return streams;
+}
+
+[[nodiscard]] std::vector<Stream>& DefaultStreams() noexcept {
+  static thread_local std::vector<Stream> streams = detail::GenerateDefaultStreams();
+  return streams;
+}
+
+[[nodiscard]] Stream& DefaultStream() noexcept(false) {
+  std::vector<Stream>& streams = DefaultStreams();
+  int device_id;
+  cudaError_t ret = cudaGetDevice(&device_id);
+  if (ret != cudaSuccess) {
+    throw CudaException(ret);
+  }
+  auto it = std::find_if(streams.begin(), streams.end(),
+      [device_id](const Stream& stream)->bool{
+    return stream.getDevice().getId() == device_id;
+  });
+  if (it == streams.end()) {
+    throw std::out_of_range("Current active device is not a valid cuda device");
+  }
+  return *it;
+}
 
 }
 
