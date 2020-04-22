@@ -94,7 +94,7 @@ template <typename ... Args>
 void HostFunctionWrapper(void* user_data) {
   using function_t = void(*)(Args...);
   using data_t = std::tuple<Args...>;
-  std::pair<function_t, data_t>* pair = reinterpret_cast<std::pair<function_t, data_t>>(user_data);
+  auto* pair = reinterpret_cast<std::pair<function_t, data_t>*>(user_data);
   pair->first(std::get<Args>(pair->second)...);
   delete pair;
 }
