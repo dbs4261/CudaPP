@@ -33,10 +33,10 @@ std::vector<Stream> GenerateDefaultStreams() noexcept;
 
 class Stream {
  public:
-  explicit Stream(const Device& _device) noexcept(false) : Stream(device, false) {}
-  explicit Stream(const Device& _device, bool non_blocking) noexcept(false) : Stream(device, 0, non_blocking) {}
-  explicit Stream(const Device& _device, int priority, bool non_blocking) noexcept(false) : stream(nullptr), device(_device) {
-    auto push_pop = detail::MakeScopeBasedDevicePushPop(_device);
+  explicit Stream(const Device& _device) noexcept(false) : Stream(_device, false) {}
+  explicit Stream(const Device& _device, bool non_blocking) noexcept(false) : Stream(_device, 0, non_blocking) {}
+  explicit Stream(const Device& _device, int priority, bool non_blocking) noexcept(false) : stream(nullptr), device_id(_device.getId()) {
+    auto push_pop = detail::MakeScopeBasedDevicePushPop(this->device_id);
     cudaError_t ret = cudaStreamCreateWithPriority(&this->stream,
         non_blocking ? cudaStreamNonBlocking : cudaStreamDefault, priority);
     if (ret != cudaSuccess) {
@@ -44,17 +44,14 @@ class Stream {
     }
   }
 
-
   Stream(const Stream&) = delete;
   Stream& operator=(const Stream&) = delete;
 
-  Stream(Stream&& other) noexcept : stream(other.stream), device(other.device) {
+  Stream(Stream&& other) noexcept : stream(other.stream), device_id(other.device_id) {
     other.stream = nullptr;
   }
-  Stream& operator=(Stream&& other) noexcept(false) {
-    if (this->device != other.device) {
-      throw CudaException(cudaErrorInvalidDevice);
-    }
+  Stream& operator=(Stream&& other) noexcept {
+    std::swap(this->device_id, other.device_id);
     std::swap(this->stream, other.stream);
   }
 
@@ -72,8 +69,8 @@ class Stream {
     return this->stream;
   }
 
-  [[nodiscard]] const Device& getDevice() const noexcept {
-    return device;
+  [[nodiscard]] const Device& getDevice() const noexcept(false) {
+    return CudaDevices().findById(this->device_id);
   }
 
   [[nodiscard]] int getPriority() const noexcept(false) {
@@ -96,7 +93,7 @@ class Stream {
 
   template <typename ... Args>
   void AddCallback(void(*function)(cudaStream_t, cudaError_t, Args...), identity_t<Args>&& ... args) noexcept(false) {
-    auto pushpop = detail::MakeScopeBasedDevicePushPop(this->device);
+    auto pushpop = detail::MakeScopeBasedDevicePushPop(this->device_id);
     using data_t = std::tuple<Args...>;
     using payload_t = std::pair<decltype(function), data_t>;
     void* user_data = new payload_t(function, data_t(capture(args)...));
@@ -130,17 +127,17 @@ class Stream {
 
   friend std::vector<Stream> detail::GenerateDefaultStreams() noexcept;
   friend bool operator==(const Stream& a, const Stream& b) noexcept {
-    return a.device == b.device and a.stream == b.stream;
+    return a.device_id == b.device_id and a.stream == b.stream;
   }
   friend bool operator!=(const Stream& a, const Stream& b) noexcept {
     return not (a == b);
   }
 
  protected:
-  explicit Stream(const Device& _device, cudaStream_t _stream) noexcept : stream(_stream), device(_device) {}
+  explicit Stream(const Device& _device, cudaStream_t _stream) noexcept : stream(_stream), device_id(_device.getId()) {}
 
   cudaStream_t stream;
-  const Device& device;
+  int device_id;
 };
 
 [[nodiscard]] std::vector<Stream> detail::GenerateDefaultStreams() noexcept {

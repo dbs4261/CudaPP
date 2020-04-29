@@ -1,5 +1,5 @@
 //
-// Created by developer on 4/21/20.
+// Created by Daniel Simon on 4/21/20.
 //
 
 #ifndef CUDAPP_CAPTURE_WRAPPER_H

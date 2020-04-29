@@ -1,5 +1,5 @@
 //
-// Created by developer on 3/31/20.
+// Created by Daniel Simon on 3/31/20.
 //
 
 #ifndef CUDAPP_DEVICE_MANAGMENT_H
@@ -232,7 +232,20 @@ struct ScopeBasedDevicePushPop {
       throw CudaException(ret);
     }
   }
+  explicit ScopeBasedDevicePushPop(int device_id) noexcept(false): previous(-1) {
+    cudaError_t ret = cudaGetDevice(&this->previous);
+    if (ret != cudaSuccess) {
+      throw CudaException(ret);
+    }
+    if (device_id == previous) {
+      this->previous = -1;
+    } else {
+      ret = cudaSetDevice(device_id);
+      throw CudaException(ret);
+    }
+  }
   friend ScopeBasedDevicePushPop MakeScopeBasedDevicePushPop(const Device& device);
+  friend ScopeBasedDevicePushPop MakeScopeBasedDevicePushPop(int device_id);
 
  public:
   ScopeBasedDevicePushPop(const ScopeBasedDevicePushPop&) = delete;
@@ -262,8 +275,12 @@ struct ScopeBasedDevicePushPop {
   int previous;
 };
 
-[[nodiscard]] inline ScopeBasedDevicePushPop MakeScopeBasedDevicePushPop(const Device& device) {
+[[nodiscard]] inline ScopeBasedDevicePushPop MakeScopeBasedDevicePushPop(const Device& device) noexcept(false) {
   return ScopeBasedDevicePushPop(device);
+}
+
+[[nodiscard]] inline ScopeBasedDevicePushPop MakeScopeBasedDevicePushPop(int device_id) noexcept(false) {
+  return ScopeBasedDevicePushPop(device_id);
 }
 
 }
