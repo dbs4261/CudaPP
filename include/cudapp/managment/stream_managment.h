@@ -14,6 +14,7 @@
 
 namespace cudapp {
 
+class Event;
 class Stream;
 
 namespace detail {
@@ -132,6 +133,7 @@ class Stream {
   friend bool operator!=(const Stream& a, const Stream& b) noexcept {
     return not (a == b);
   }
+  friend cudapp::Event;
 
  protected:
   explicit Stream(const Device& _device, cudaStream_t _stream) noexcept : stream(_stream), device_id(_device.getId()) {}
