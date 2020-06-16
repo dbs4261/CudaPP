@@ -2,10 +2,6 @@
 // Created by Daniel Simon on 3/24/20.
 //
 
-#include "cudapp/utilities/ide_helpers.h"
-
-#include <device_launch_parameters.h>
-
 #include "gtest/gtest.h"
 
 #include "cudapp/functions/kernel_launchers.h"

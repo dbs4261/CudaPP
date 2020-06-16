@@ -5,15 +5,15 @@
 #ifndef CUDAPP_MIPMAPPED_TEXTURE_OBJECT_H
 #define CUDAPP_MIPMAPPED_TEXTURE_OBJECT_H
 
-#include "cudapp/utilities/ide_helpers.h"
-
 #include <memory>
 #include <type_traits>
 
+#include <cuda_runtime_api.h>
 #include <driver_types.h>
 #include <texture_indirect_functions.h>
 
 #include "cudapp/mathematics/vector_type_traits.h"
+#include "cudapp/utilities/macros.h"
 
 #include "mipmapped_array.h"
 #include "texture_view.h"
@@ -73,10 +73,7 @@ class MipmappedTextureObject {
 
   ~MipmappedTextureObject() {
     if (this->texture != 0) {
-      cudaError_t ret = cudaDestroyTextureObject(this->texture);
-      if (ret != cudaSuccess) {
-        throw CudaException(ret);
-      }
+      CudaCatchError(cudaDestroyTextureObject(this->texture));
     }
   }
 

@@ -5,11 +5,11 @@
 #ifndef CUDAPP_CUDA_EXCEPTION_H
 #define CUDAPP_CUDA_EXCEPTION_H
 
-#include "cudapp/utilities/ide_helpers.h"
-
 #include <exception>
 #include <string>
 #include <sstream>
+
+#include <cuda_runtime_api.h>
 
 namespace cudapp {
 

@@ -5,6 +5,8 @@
 #ifndef CUDAPP_VECTOR_TYPE_TRAITS_H
 #define CUDAPP_VECTOR_TYPE_TRAITS_H
 
+#include <type_traits>
+
 #include <vector_types.h>
 
 template <typename T, unsigned int N>

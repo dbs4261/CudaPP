@@ -5,15 +5,15 @@
 #ifndef CUDAPP_SURFACE_OBJECT_H
 #define CUDAPP_SURFACE_OBJECT_H
 
-#include "cudapp/utilities/ide_helpers.h"
-
 #include <cassert>
 #include <memory>
 
+#include <cuda_runtime_api.h>
+#include <driver_types.h>
 #include <surface_types.h>
 #include <surface_indirect_functions.h>
-#include <driver_types.h>
 
+#include "cudapp/utilities/macros.h"
 #include "cudapp/utilities/memory_helpers.h"
 
 #include "cuda_array.h"

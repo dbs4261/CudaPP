@@ -5,11 +5,12 @@
 #ifndef CUDAPP_EVENT_MANAGMENT_H
 #define CUDAPP_EVENT_MANAGMENT_H
 
-#include "cudapp/utilities/ide_helpers.h"
-
 #include <chrono>
 
-#include "cudapp/exceptions//cuda_exception.h"
+#include <cuda_runtime_api.h>
+
+#include "cudapp/exceptions/cuda_exception.h"
+#include "cudapp/utilities/macros.h"
 
 #include "device_managment.h"
 #include "stream_managment.h"
@@ -29,10 +30,7 @@ class Event {
   }
   ~Event() noexcept(false) {
     if (this->event != nullptr) {
-      cudaError_t ret = cudaEventDestroy(this->event);
-      if (ret != cudaSuccess) {
-        throw CudaException(ret);
-      }
+      CudaCatchError(cudaEventDestroy(this->event));
     }
   }
 

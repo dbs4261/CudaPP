@@ -5,10 +5,9 @@
 #ifndef CUDAPP_TEXTURE_VIEW_H
 #define CUDAPP_TEXTURE_VIEW_H
 
-#include "cudapp/utilities/ide_helpers.h"
-
 #include <utility>
 
+#include <cuda_runtime_api.h>
 #include <texture_types.h>
 #include <texture_indirect_functions.h>
 

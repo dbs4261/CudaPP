@@ -5,15 +5,14 @@
 #ifndef CUDAPP_DEVICE_MANAGMENT_H
 #define CUDAPP_DEVICE_MANAGMENT_H
 
-#include "cudapp/utilities/ide_helpers.h"
-
 #include <algorithm>
 #include <array>
 #include <vector>
 
-#include "cuda_runtime.h"
+#include <cuda_runtime_api.h>
 
 #include "cudapp/exceptions/cuda_exception.h"
+#include "cudapp/utilities/macros.h"
 
 namespace cudapp {
 
@@ -258,17 +257,12 @@ struct ScopeBasedDevicePushPop {
   ScopeBasedDevicePushPop& operator=(ScopeBasedDevicePushPop&& other) noexcept {
     this->previous = other.previous;
     other.previous = -1;
+    return *this;
   }
 
   ~ScopeBasedDevicePushPop() {
     if (this->previous >= 0) {
-      cudaError_t ret = cudaSetDevice(previous);
-      if (ret != cudaSuccess) {
-        #pragma clang diagnostic push
-        #pragma clang diagnostic ignored "-Wexceptions"
-        throw CudaException(ret);
-        #pragma clang diagnostic pop
-      }
+      CudaCatchError(cudaSetDevice(previous));
     }
   }
 

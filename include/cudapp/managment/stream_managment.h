@@ -5,11 +5,12 @@
 #ifndef CUDAPP_STREAM_MANAGMENT_H
 #define CUDAPP_STREAM_MANAGMENT_H
 
-#include "cudapp/utilities/ide_helpers.h"
+#include <cuda_runtime_api.h>
 
 #include "cudapp/exceptions/cuda_exception.h"
 #include "cudapp/managment/device_managment.h"
 #include "cudapp/utilities/capture_wrapper.h"
+#include "cudapp/utilities/macros.h"
 #include "cudapp/utilities/type_helpers.h"
 
 namespace cudapp {
@@ -23,7 +24,7 @@ template <typename ... Args>
 void CallbackForwarder(cudaStream_t stream, cudaError_t error, void* user_data) {
   using function_t = void(*)(cudaStream_t, cudaError_t, Args...);
   using data_t = std::tuple<Args...>;
-  std::pair<function_t, data_t>* pair = reinterpret_cast<std::pair<function_t, data_t>>(user_data);
+  auto* pair = reinterpret_cast<std::pair<function_t, data_t>*>(user_data);
   pair->first(stream, error, std::get<Args>(pair->second)...);
   delete pair;
 }
@@ -54,15 +55,13 @@ class Stream {
   Stream& operator=(Stream&& other) noexcept {
     std::swap(this->device_id, other.device_id);
     std::swap(this->stream, other.stream);
+    return *this;
   }
 
   ~Stream() noexcept(false) {
     // Cant destroy default streams so just move on
     if (not (this->stream == nullptr or this->stream == cudaStreamLegacy or this->stream == cudaStreamPerThread)) {
-      cudaError_t ret = cudaStreamDestroy(this->stream);
-      if (ret != cudaSuccess) {
-        throw CudaException(ret);
-      }
+      CudaCatchError(cudaStreamDestroy(this->stream));
     }
   }
 

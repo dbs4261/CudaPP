@@ -5,8 +5,6 @@
 #ifndef CUDAPP_CUDA_HELPERS_H
 #define CUDAPP_CUDA_HELPERS_H
 
-#include "ide_helpers.h"
-
 #include <algorithm>
 #include <cassert>
 

@@ -5,18 +5,16 @@
 #ifndef CUDAPP_MIPMAPPED_ARRAY_H
 #define CUDAPP_MIPMAPPED_ARRAY_H
 
-#include "cudapp/utilities/ide_helpers.h"
-
 #include <cassert>
 #include <utility>
 
 #include <channel_descriptor.h>
 #include <cuda_runtime_api.h>
 #include <driver_types.h>
-#include <cuda.h>
 
-#include "cudapp/utilities/memory_helpers.h"
 #include "cudapp/mathematics/vector_type_traits.h"
+#include "cudapp/utilities/macros.h"
+#include "cudapp/utilities/memory_helpers.h"
 
 #include "cuda_array.h"
 
@@ -53,10 +51,7 @@ struct MipmappedArray {
   }
 
   ~MipmappedArray() noexcept {
-    cudaError_t ret = cudaFreeMipmappedArray(array);
-    if (ret != cudaSuccess) {
-      throw CudaException(ret);
-    }
+    CudaCatchError(cudaFreeMipmappedArray(array));
   }
   
   MipmappedArray<T>& operator=(const MipmappedArray<T>& other) noexcept(false) {

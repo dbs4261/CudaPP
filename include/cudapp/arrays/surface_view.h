@@ -5,11 +5,10 @@
 #ifndef CUDAPP_SURFACE_VIEW_H
 #define CUDAPP_SURFACE_VIEW_H
 
-#include "cudapp/utilities/ide_helpers.h"
-
 #include <type_traits>
 #include <utility>
 
+#include <cuda_runtime_api.h>
 #include <surface_types.h>
 #include <surface_indirect_functions.h>
 

@@ -5,8 +5,6 @@
 #ifndef CUDAPP_KERNEL_LAUNCHERS_H
 #define CUDAPP_KERNEL_LAUNCHERS_H
 
-#include "cudapp/utilities/ide_helpers.h"
-
 #include <algorithm>
 #include <array>
 #include <cassert>
@@ -14,6 +12,8 @@
 #include <tuple>
 #include <unordered_map>
 #include <vector>
+
+#include <cuda_runtime_api.h>
 
 #include "cudapp/exceptions/cuda_exception.h"
 #include "cudapp/managment/stream_managment.h"

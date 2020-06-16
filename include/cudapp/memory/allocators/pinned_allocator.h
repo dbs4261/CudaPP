@@ -5,12 +5,11 @@
 #ifndef CUDAPP_PINNED_ALLOCATOR_H
 #define CUDAPP_PINNED_ALLOCATOR_H
 
-#include "cudapp/utilities/ide_helpers.h"
-
 #include <new>
 #include <utility>
 
 #include "cudapp/exceptions/cuda_exception.h"
+#include "cudapp/utilities/macros.h"
 
 namespace cudapp {
 
@@ -37,11 +36,7 @@ class PinnedAllocator {
   }
 
   void deallocate(T* pointer, std::size_t) noexcept {
-    cudaError_t ret = cudaFreeHost(pointer);
-    if (ret != cudaSuccess) {
-      // Uncatchable exception
-      throw CudaException(ret);
-    }
+    CudaCatchError(cudaFreeHost(pointer));
   }
 };
 
