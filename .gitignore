@@ -32,3 +32,5 @@
 *.app
 
 cmake-*
+.idea
+.git
