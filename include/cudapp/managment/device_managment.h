@@ -5,13 +5,11 @@
 #ifndef CUDAPP_DEVICE_MANAGMENT_H
 #define CUDAPP_DEVICE_MANAGMENT_H
 
-#include "cudapp/utilities/ide_helpers.h"
-
 #include <algorithm>
 #include <array>
 #include <vector>
 
-#include "cuda_runtime.h"
+#include <cuda_runtime_api.h>
 
 #include "cudapp/exceptions/cuda_exception.h"
 
@@ -258,6 +256,7 @@ struct ScopeBasedDevicePushPop {
   ScopeBasedDevicePushPop& operator=(ScopeBasedDevicePushPop&& other) noexcept {
     this->previous = other.previous;
     other.previous = -1;
+    return *this;
   }
 
   ~ScopeBasedDevicePushPop() {

@@ -5,12 +5,11 @@
 #ifndef CUDAPP_CUDA_ARRAY_H
 #define CUDAPP_CUDA_ARRAY_H
 
-#include "cudapp/utilities/ide_helpers.h"
-
 #include <cassert>
 #include <utility>
 
 #include <channel_descriptor.h>
+#include <cuda_runtime_api.h>
 
 #include "cudapp/exceptions/cuda_exception.h"
 #include "cudapp/utilities/memory_helpers.h"

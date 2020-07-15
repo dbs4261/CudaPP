@@ -5,7 +5,7 @@
 #ifndef CUDAPP_PINNED_ALLOCATOR_H
 #define CUDAPP_PINNED_ALLOCATOR_H
 
-#include "cudapp/utilities/ide_helpers.h"
+#include <cuda_runtime_api.h>
 
 #include <new>
 #include <utility>

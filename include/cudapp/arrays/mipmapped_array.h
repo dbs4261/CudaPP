@@ -5,15 +5,12 @@
 #ifndef CUDAPP_MIPMAPPED_ARRAY_H
 #define CUDAPP_MIPMAPPED_ARRAY_H
 
-#include "cudapp/utilities/ide_helpers.h"
-
 #include <cassert>
 #include <utility>
 
 #include <channel_descriptor.h>
 #include <cuda_runtime_api.h>
 #include <driver_types.h>
-#include <cuda.h>
 
 #include "cudapp/utilities/memory_helpers.h"
 #include "cudapp/mathematics/vector_type_traits.h"

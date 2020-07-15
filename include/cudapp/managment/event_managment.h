@@ -5,11 +5,11 @@
 #ifndef CUDAPP_EVENT_MANAGMENT_H
 #define CUDAPP_EVENT_MANAGMENT_H
 
-#include "cudapp/utilities/ide_helpers.h"
-
 #include <chrono>
 
-#include "cudapp/exceptions//cuda_exception.h"
+#include <cuda_runtime_api.h>
+
+#include "cudapp/exceptions/cuda_exception.h"
 
 #include "device_managment.h"
 #include "stream_managment.h"

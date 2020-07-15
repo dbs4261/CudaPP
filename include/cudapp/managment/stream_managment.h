@@ -5,7 +5,10 @@
 #ifndef CUDAPP_STREAM_MANAGMENT_H
 #define CUDAPP_STREAM_MANAGMENT_H
 
-#include "cudapp/utilities/ide_helpers.h"
+#include <utility>
+#include <vector>
+
+#include <cuda_runtime_api.h>
 
 #include "cudapp/exceptions/cuda_exception.h"
 #include "cudapp/managment/device_managment.h"
@@ -23,7 +26,7 @@ template <typename ... Args>
 void CallbackForwarder(cudaStream_t stream, cudaError_t error, void* user_data) {
   using function_t = void(*)(cudaStream_t, cudaError_t, Args...);
   using data_t = std::tuple<Args...>;
-  std::pair<function_t, data_t>* pair = reinterpret_cast<std::pair<function_t, data_t>>(user_data);
+  std::pair<function_t, data_t>* pair = reinterpret_cast<std::pair<function_t, data_t>*>(user_data);
   pair->first(stream, error, std::get<Args>(pair->second)...);
   delete pair;
 }
@@ -52,8 +55,11 @@ class Stream {
     other.stream = nullptr;
   }
   Stream& operator=(Stream&& other) noexcept {
-    std::swap(this->device_id, other.device_id);
-    std::swap(this->stream, other.stream);
+    if (this != std::addressof(other)) {
+      std::swap(this->device_id, other.device_id);
+      std::swap(this->stream, other.stream);
+    }
+    return *this;
   }
 
   ~Stream() noexcept(false) {

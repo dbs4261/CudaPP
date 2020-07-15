@@ -5,11 +5,10 @@
 #ifndef CUDAPP_TEXTURE_OBJECT_H
 #define CUDAPP_TEXTURE_OBJECT_H
 
-#include "cudapp/utilities/ide_helpers.h"
-
 #include <memory>
 #include <type_traits>
 
+#include <cuda_runtime_api.h>
 #include <driver_types.h>
 #include <texture_indirect_functions.h>
 

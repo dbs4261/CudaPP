@@ -23,11 +23,10 @@ target_compile_options(project_options INTERFACE
   $<$<COMPILE_LANGUAGE:CUDA>:--expt-relaxed-constexpr>
   $<$<COMPILE_LANGUAGE:CUDA>:--expt-extended-lambda>
   $<$<COMPILE_LANGUAGE:CUDA>:--default-stream per-thread>
-  $<$<CONFIG:Debug>:$<$<COMPILE_LANGUAGE:CUDA>:-g>>
-  $<$<CONFIG:Debug>:$<$<COMPILE_LANGUAGE:CUDA>:-G>>
-  $<$<CONFIG:Debug>:$<$<COMPILE_LANGUAGE:CUDA>:-O0>>
-  $<$<CONFIG:Debug>:$<$<COMPILE_LANGUAGE:CUDA>:--ptxas-options=-v>>
-  $<$<CONFIG:Release>:$<$<COMPILE_LANGUAGE:CUDA>:-O3>>
+  $<$<CONFIG:DEBUG>:$<$<COMPILE_LANGUAGE:CUDA>:-g>>
+  $<$<CONFIG:DEBUG>:$<$<COMPILE_LANGUAGE:CUDA>:-G>>
+  $<$<CONFIG:DEBUG>:$<$<COMPILE_LANGUAGE:CUDA>:-O0>>
+  $<$<CONFIG:DEBUG>:$<$<COMPILE_LANGUAGE:CUDA>:--ptxas-options=-v>>
 )
 
 add_library(project_warnings INTERFACE)
