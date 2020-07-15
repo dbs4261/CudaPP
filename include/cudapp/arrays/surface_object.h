@@ -13,6 +13,7 @@
 #include <surface_types.h>
 #include <surface_indirect_functions.h>
 
+#include "cudapp/utilities/macros.h"
 #include "cudapp/utilities/memory_helpers.h"
 
 #include "cuda_array.h"

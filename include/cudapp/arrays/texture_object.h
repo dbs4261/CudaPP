@@ -13,6 +13,7 @@
 #include <texture_indirect_functions.h>
 
 #include "cudapp/mathematics/vector_type_traits.h"
+#include "cudapp/utilities/macros.h"
 
 #include "cuda_array.h"
 #include "texture_view.h"

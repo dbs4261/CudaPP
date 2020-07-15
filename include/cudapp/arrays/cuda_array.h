@@ -12,8 +12,9 @@
 #include <cuda_runtime_api.h>
 
 #include "cudapp/exceptions/cuda_exception.h"
-#include "cudapp/utilities/memory_helpers.h"
 #include "cudapp/mathematics/vector_type_traits.h"
+#include "cudapp/utilities/macros.h"
+#include "cudapp/utilities/memory_helpers.h"
 
 namespace cudapp {
 
@@ -48,11 +49,7 @@ class CudaArray {
   }
 
   ~CudaArray() noexcept {
-    cudaError_t ret = cudaFreeArray(this->array);
-    if (ret != cudaSuccess) {
-      // Uncatchable warning
-      throw CudaException(ret);
-    }
+    CudaCatchError(cudaFreeArray(this->array));
   }
 
   CudaArray<T>& operator=(const CudaArray<T>& other) noexcept(false) {

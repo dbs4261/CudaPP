@@ -13,6 +13,7 @@
 #include <texture_indirect_functions.h>
 
 #include "cudapp/mathematics/vector_type_traits.h"
+#include "cudapp/utilities/macros.h"
 
 #include "mipmapped_array.h"
 #include "texture_view.h"
@@ -72,10 +73,7 @@ class MipmappedTextureObject {
 
   ~MipmappedTextureObject() {
     if (this->texture != 0) {
-      cudaError_t ret = cudaDestroyTextureObject(this->texture);
-      if (ret != cudaSuccess) {
-        throw CudaException(ret);
-      }
+      CudaCatchError(cudaDestroyTextureObject(this->texture));
     }
   }
 

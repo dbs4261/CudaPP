@@ -12,6 +12,7 @@
 #include <cuda_runtime_api.h>
 
 #include "cudapp/exceptions/cuda_exception.h"
+#include "cudapp/utilities/macros.h"
 
 namespace cudapp {
 
@@ -261,13 +262,7 @@ struct ScopeBasedDevicePushPop {
 
   ~ScopeBasedDevicePushPop() {
     if (this->previous >= 0) {
-      cudaError_t ret = cudaSetDevice(previous);
-      if (ret != cudaSuccess) {
-        #pragma clang diagnostic push
-        #pragma clang diagnostic ignored "-Wexceptions"
-        throw CudaException(ret);
-        #pragma clang diagnostic pop
-      }
+      CudaCatchError(cudaSetDevice(previous));
     }
   }
 

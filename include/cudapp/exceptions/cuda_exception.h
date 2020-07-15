@@ -9,6 +9,8 @@
 #include <string>
 #include <sstream>
 
+#include <cuda_runtime_api.h>
+
 namespace cudapp {
 
 class CudaException : public std::exception {
